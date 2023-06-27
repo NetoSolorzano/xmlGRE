@@ -13,10 +13,11 @@ namespace xmlGRE
 {
     class Program
     {
+        //static string rutaAct = @"c:\TRanscarga\TransCarga.db";
         static string rutaAct = Directory.GetCurrentDirectory() + @"\TransCarga.db";    // la base de datos siempre debe llamarse Transcarga.db
         public static string CadenaConexion = $"Data Source={rutaAct}";       // este app debe estar dentro del directorio del sistema Ej. c:/transcarga/xmlGRE
         
-        static void Main(string[] args)
+        static int Main(string[] args)
         {
             var ruta = args[0];                         // ruta donde se grabará el xml
             var ruce = args[1];                         // ruc del emisor de la guía electrónica
@@ -24,10 +25,11 @@ namespace xmlGRE
             var ifir = args[3].ToLower();               // indicador si se debe firmar | true = si firmar, false = no firmar
             var cert = args[4];                         // ruta y nombre del certificado .pfx
             var clav = args[5];                         // clave del certificado
+            var tipg = args[6];                         // tipo guía 31->Transportista || 09->Remitente
 
             // las tablas las crea Transcarga, el form de creación de guías lo hace
             //CreaTablaLiteGRE();                                     // llamada solo en esta ocasión
-
+            int  retorna = 0;   // 0=fallo
             if (ruta != "" && ruce != "" && guia != "")
             {
                 Console.WriteLine("Ruta xml: " + ruta);
@@ -35,8 +37,9 @@ namespace xmlGRE
                 Console.WriteLine("Guía: " + guia);
                 Console.WriteLine("Ruta .db: " + rutaAct);
                 Console.WriteLine("Firma?: " + ifir);
-                DatosUBLDespach(ruta, ruce, guia, ifir, cert, clav);
+                if (DatosUBLDespach(ruta, ruce, guia, ifir, cert, clav, tipg) == "Exito") retorna = 1;
             }
+            return retorna;
         }
         static private void CreaTablaLiteGRE()
         {
@@ -283,8 +286,9 @@ namespace xmlGRE
             }
         }
 
-        private static void DatosUBLDespach(string Pruta, string PrucEmi, string PdocuGR, string IndFir, string RAcert, string Clacert)      // ponemos los valores en la clase GRE_T
+        private static string DatosUBLDespach(string Pruta, string PrucEmi, string PdocuGR, string IndFir, string RAcert, string Clacert, string tipg)      // ponemos los valores en la clase GRE_T
         {
+            string retorna = "";
             using (SQLiteConnection cnx = new SQLiteConnection(CadenaConexion))
             {
                 cnx.Open();
@@ -402,6 +406,9 @@ namespace xmlGRE
                             var i02 = lite["DirParDir"].ToString();
                             var i03 = lite["DirLLeUbi"].ToString();
                             var i04 = lite["DirLLeDir"].ToString();
+                            // motivo del traslado
+                            var m01 = lite["MotTrasCo"].ToString();
+                            var m02 = lite["MotTrasDe"].ToString();
 
                             GRE_T gRE = new GRE_T
                             {
@@ -411,11 +418,11 @@ namespace xmlGRE
                                 NumGuia = c03,                  // PdocuGR,
                                 FecEmis = c04,                  // "2023-05-17",                 // fecha de emision de la guía
                                 HorEmis = c05,                  // "10:31:13",
-                                CantBul = c06,       // 1,
-                                PesoTot = c07,   // 30,
+                                CantBul = c06,                  // 1,
+                                PesoTot = c07,                  // 30,
                                 CodUnid = c08,                  // "KGM",                        // código unidad de medida de sunat
                                 FecIniT = c09,                  // "2023-05-17",                 // fecha de inicio del traslado, se debe cojer de la fecha del manifiesto
-                                CargaUn = c10,  // true,                        // marca de carga única, si=true, no=false
+                                CargaUn = c10,                  // true,                        // marca de carga única, si=true, no=false
                                 // documentos relacionados
                                 DocRelnu1 = d01,              // "001-00054322", 
                                 DocRelti1 = d02,              // "09",
@@ -457,10 +464,10 @@ namespace xmlGRE
                                 PagNumdoc = p02,                        // "09314486",
                                 PagNombre = p03,                        // "Lucio Solórzano",
                                 // datos del camión subcontratado si fuera el caso ... en este caso estamos probando como camión propio
-                                SConTipdo = s01,   //"6",
-                                SConNomTi = s02,   //"Registro Unico de Contributentes",
-                                SConNumdo = s03,   //"20508074281",
-                                SconNombr = s04,   //"Transpostes Guapo Lindo",
+                                SConTipdo = s01,                        //"6",
+                                SConNomTi = s02,                        //"Registro Unico de Contributentes",
+                                SConNumdo = s03,                        //"20508074281",
+                                SconNombr = s04,                        //"Transpostes Guapo Lindo",
                                 // datos del envío del (los) camiones, autorizaciones de trackto y carreta
                                 EnvPlaca1 = a01,                      // "F2N714",           // placa trackto
                                 EnvAutor1 = a02,                      //"0151742078",       // autorización o certificado de habilitación del trackto
@@ -479,33 +486,53 @@ namespace xmlGRE
                                 ChoNombr1 = f04,                         // "Williams Octavio",
                                 ChoApell1 = f05,                         // "Yanqui Mamani",
                                 ChoLicen1 = f06,                         // "U46785663",
-                                ChoTipDi2 = f07,   //"1",
-                                ChoNumDi2 = f08,   //"09314486",
-                                ChoNomTi2 = f09,   //"Documento Nacional de Identidad",
-                                ChoNombr2 = f10,   //"Neto",
-                                ChoApell2 = f11,   //"Solórzano Ramos",
-                                ChoLicen2 = f12,   //"Z09314486",
+                                ChoTipDi2 = f07,                        //"1",
+                                ChoNumDi2 = f08,                        //"09314486",
+                                ChoNomTi2 = f09,                        //"Documento Nacional de Identidad",
+                                ChoNombr2 = f10,                        //"Neto",
+                                ChoApell2 = f11,                        //"Solórzano Ramos",
+                                ChoLicen2 = f12,                        //"Z09314486",
                                 // datos de direcciones partida y llegada
                                 DirParUbi = i01,                     // "150115",
                                 DirParDir = i02,                     // "Jr. Hipolito Unanue 878 - La Victoria - Lima",
                                 DirLLeUbi = i03,                     // "070101",
                                 DirLLeDir = i04,                     // "Mz.A19 Lt.16 Sector I Bocanegra - Callao - Callao",
+                                // motivo del traslado
+                                MotTrasCo = m01,                     // codigo sunat, 
+                                MotTrasDe = m02,                     // descripción motivo del traslado
                                 // detalle de la guía
-                                Detalle = detalle //new string[5] { "1", "ZZ", "30", "Servicio de Transporte de carga terrestre ", "Dice contener Enseres caseros" }     // Cant,Umed,Peso,Desc1,Desc2
+                                Detalle = detalle                   //new string[5] { "1", "ZZ", "30", "Servicio de Transporte de carga terrestre ", "Dice contener Enseres caseros" }     // Cant,Umed,Peso,Desc1,Desc2
                                 
                             };
-                            UsoUBLDespach(Pruta, IndFir, RAcert, Clacert,
-                                gRE.EmisRuc, gRE.EmisNom, gRE.EmisDir, gRE.EmisUbi, gRE.EmisDep, gRE.EmisPro, gRE.EmisDis, gRE.EmisUrb, gRE.EmisPai, gRE.EmisCor,
-                                gRE.CodGuia, gRE.NomGuia, gRE.NumGuia, gRE.FecEmis, gRE.HorEmis, gRE.CantBul, gRE.PesoTot, gRE.CodUnid, gRE.FecIniT, gRE.CargaUn,
-                                gRE.DocRelnu1, gRE.DocRelti1, gRE.DocRelnr1, gRE.DocRelcs1, gRE.DocRelnm1, gRE.DocRelnu2, gRE.DocRelti2, gRE.DocRelnr2, gRE.DocRelcs2, gRE.DocRelnm2,
-                                gRE.DstTipdoc, gRE.DstNomTdo, gRE.DstNumdoc, gRE.DstNombre, gRE.DstDirecc, gRE.DstUbigeo,
-                                gRE.RemTipdoc, gRE.RemNomTdo, gRE.RemNumdoc, gRE.RemNombre, gRE.RemDirecc, gRE.RemUbigeo,
-                                gRE.PagTipdoc, gRE.PagNomTip, gRE.PagNumdoc, gRE.PagNombre, gRE.SConTipdo, gRE.SConNomTi, gRE.SConNumdo, gRE.SconNombr,
-                                gRE.EnvPlaca1, gRE.EnvAutor1, gRE.EnvRegis1, gRE.EnvCodEn1, gRE.EnvNomEn1, gRE.EnvPlaca2, gRE.EnvAutor2, gRE.EnvRegis2, gRE.EnvCodEn2, gRE.EnvNomEn2,
-                                gRE.ChoTipDi1, gRE.ChoNumDi1, gRE.ChoNomTi1, gRE.ChoNombr1, gRE.ChoApell1, gRE.ChoLicen1,
-                                gRE.ChoTipDi2, gRE.ChoNumDi2, gRE.ChoNomTi2, gRE.ChoNombr2, gRE.ChoApell2, gRE.ChoLicen2,
-                                gRE.DirParUbi, gRE.DirParDir, gRE.DirLLeUbi, gRE.DirLLeDir, gRE.Detalle);
-
+                            if (tipg == "31")
+                            {
+                                retorna = UsoUBLDespachT(Pruta, IndFir, RAcert, Clacert,
+                                    gRE.EmisRuc, gRE.EmisNom, gRE.EmisDir, gRE.EmisUbi, gRE.EmisDep, gRE.EmisPro, gRE.EmisDis, gRE.EmisUrb, gRE.EmisPai, gRE.EmisCor,
+                                    gRE.CodGuia, gRE.NomGuia, gRE.NumGuia, gRE.FecEmis, gRE.HorEmis, gRE.CantBul, gRE.PesoTot, gRE.CodUnid, gRE.FecIniT, gRE.CargaUn,
+                                    gRE.DocRelnu1, gRE.DocRelti1, gRE.DocRelnr1, gRE.DocRelcs1, gRE.DocRelnm1, gRE.DocRelnu2, gRE.DocRelti2, gRE.DocRelnr2, gRE.DocRelcs2, gRE.DocRelnm2,
+                                    gRE.DstTipdoc, gRE.DstNomTdo, gRE.DstNumdoc, gRE.DstNombre, gRE.DstDirecc, gRE.DstUbigeo,
+                                    gRE.RemTipdoc, gRE.RemNomTdo, gRE.RemNumdoc, gRE.RemNombre, gRE.RemDirecc, gRE.RemUbigeo,
+                                    gRE.PagTipdoc, gRE.PagNomTip, gRE.PagNumdoc, gRE.PagNombre, gRE.SConTipdo, gRE.SConNomTi, gRE.SConNumdo, gRE.SconNombr,
+                                    gRE.EnvPlaca1, gRE.EnvAutor1, gRE.EnvRegis1, gRE.EnvCodEn1, gRE.EnvNomEn1, gRE.EnvPlaca2, gRE.EnvAutor2, gRE.EnvRegis2, gRE.EnvCodEn2, gRE.EnvNomEn2,
+                                    gRE.ChoTipDi1, gRE.ChoNumDi1, gRE.ChoNomTi1, gRE.ChoNombr1, gRE.ChoApell1, gRE.ChoLicen1,
+                                    gRE.ChoTipDi2, gRE.ChoNumDi2, gRE.ChoNomTi2, gRE.ChoNombr2, gRE.ChoApell2, gRE.ChoLicen2,
+                                    gRE.DirParUbi, gRE.DirParDir, gRE.DirLLeUbi, gRE.DirLLeDir, gRE.Detalle);
+                            }
+                            if (tipg == "09")
+                            {
+                                retorna = UsoUBLDespachR(Pruta, IndFir, RAcert, Clacert,
+                                    gRE.EmisRuc, gRE.EmisNom, gRE.EmisDir, gRE.EmisUbi, gRE.EmisDep, gRE.EmisPro, gRE.EmisDis, gRE.EmisUrb, gRE.EmisPai, gRE.EmisCor,
+                                    gRE.CodGuia, gRE.NomGuia, gRE.NumGuia, gRE.FecEmis, gRE.HorEmis, gRE.CantBul, gRE.PesoTot, gRE.CodUnid, gRE.FecIniT, gRE.CargaUn,
+                                    gRE.DocRelnu1, gRE.DocRelti1, gRE.DocRelnr1, gRE.DocRelcs1, gRE.DocRelnm1, gRE.DocRelnu2, gRE.DocRelti2, gRE.DocRelnr2, gRE.DocRelcs2, gRE.DocRelnm2,
+                                    gRE.DstTipdoc, gRE.DstNomTdo, gRE.DstNumdoc, gRE.DstNombre, gRE.DstDirecc, gRE.DstUbigeo,
+                                    gRE.RemTipdoc, gRE.RemNomTdo, gRE.RemNumdoc, gRE.RemNombre, gRE.RemDirecc, gRE.RemUbigeo,
+                                    gRE.PagTipdoc, gRE.PagNomTip, gRE.PagNumdoc, gRE.PagNombre, gRE.SConTipdo, gRE.SConNomTi, gRE.SConNumdo, gRE.SconNombr,
+                                    gRE.EnvPlaca1, gRE.EnvAutor1, gRE.EnvRegis1, gRE.EnvCodEn1, gRE.EnvNomEn1, gRE.EnvPlaca2, gRE.EnvAutor2, gRE.EnvRegis2, gRE.EnvCodEn2, gRE.EnvNomEn2,
+                                    gRE.ChoTipDi1, gRE.ChoNumDi1, gRE.ChoNomTi1, gRE.ChoNombr1, gRE.ChoApell1, gRE.ChoLicen1,
+                                    gRE.ChoTipDi2, gRE.ChoNumDi2, gRE.ChoNomTi2, gRE.ChoNombr2, gRE.ChoApell2, gRE.ChoLicen2,
+                                    gRE.MotTrasCo, gRE.MotTrasDe,
+                                    gRE.DirParUbi, gRE.DirParDir, gRE.DirLLeUbi, gRE.DirLLeDir, gRE.Detalle);
+                            }
                         }
                     }
                     else
@@ -515,9 +542,9 @@ namespace xmlGRE
                     }
                 }
             };
-            
+            return retorna;
         }
-        private static void UsoUBLDespach(string Pruta, string IndFir, string RAcert, string Clacert, 
+        private static string UsoUBLDespachT(string Pruta, string IndFir, string RAcert, string Clacert, 
             string rucEmi, string nomEmi, string dirEmi, string ubiEmi, string depEmi, string proEmi, string disEmi, string urbEmi, string paiEmi, string corEmi,
             string codGuia, string nomGuia, string numGuia, string fecEmis, string horEmis, int cantBul, decimal pesoTot, string codunis, string feciniT, bool cargaun,
             string docRelnu1, string docRelti1, string docRelnr1, string docRelcs1, string docRelnm1, string docRelnu2, string docRelti2, string docRelnr2, string docRelcs2, string docRelnm2,
@@ -527,10 +554,9 @@ namespace xmlGRE
             string envPlaca1, string envAutor1, string envRegis1, string envCodEn1, string envNomEn1, string envPlaca2, string envAutor2, string envRegis2, string envCodEn2, string envNomEn2,
             string choTipDi1, string choNumDi1, string choNomTi1, string choNombr1, string choApell1, string choLicen1,
             string choTipDi2, string choNumDi2, string choNomTi2, string choNombr2, string choApell2, string choLicen2,
-            string dirParubi, string dirPardir, string dirLLeubi, string dirLLedir, string[] deta)         // uso clase de Sunat 
+            string dirParubi, string dirPardir, string dirLLeubi, string dirLLedir, string[] deta)         // GUIA TRANSPORTISTA 
         {
-            // calculo de valores variables
-            //var output = XmlConvert.ToDateTime(horEmis);
+            string retorna = "Fallo";
             // TEXTO TITULO DEL DOCUMENTO
             NoteType[] nota1 = new NoteType[]
             {
@@ -590,7 +616,7 @@ namespace xmlGRE
             };
             #endregion
 
-            #region // FIRMA ELECTRONICA DE LA GUIA TRANSPORTISTA 
+            #region // FIRMA ELECTRONICA DE LA GUIA ELECTRONICA 
             PartyType iden = new PartyType
             {
                 PartyIdentification = new PartyIdentificationType[]
@@ -632,7 +658,7 @@ namespace xmlGRE
             };
             #endregion
 
-            // DATOS DEL EMISOR DE LA GUIA TRANSPORTISTA
+            // DATOS DEL EMISOR DE LA GUIA ELECTRONICA
             SupplierPartyType prove = new SupplierPartyType
             {
                 CustomerAssignedAccountID = new CustomerAssignedAccountIDType { Value = rucEmi, schemeID = "6" },     // prueba para el 18/05/2023
@@ -660,7 +686,7 @@ namespace xmlGRE
                 }
             };
 
-            // DATOS DEL DESTINATARIO DE LA GUIA TRANSPORTISTA     
+            // DATOS DEL DESTINATARIO DE LA GUIA ELECTRONICA     
             CustomerPartyType cliente = new CustomerPartyType
             {
                 Party = new PartyType
@@ -683,11 +709,11 @@ namespace xmlGRE
                 {
                     PartyIdentification = new PartyIdentificationType[]
                     {
-                        new PartyIdentificationType { ID = new IDType { Value = pagnume, schemeID = pagdocu, schemeName = pagnomt, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"} }
+                    new PartyIdentificationType { ID = new IDType { Value = pagnume, schemeID = pagdocu, schemeName = pagnomt, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"} }
                     },
                     PartyLegalEntity = new PartyLegalEntityType[]
                     {
-                        new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = pagnomb } }
+                    new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = pagnomb } }
                     }
                 }
             };
@@ -752,8 +778,11 @@ namespace xmlGRE
             SpecialInstructionsType indicadorQuienpaga = new SpecialInstructionsType();
             if (scontip != null) indicadorSubCont = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorTrasporteSubcontratado" };
             if (cargaun == true) indicadorCargaUnica = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorTrasladoTotal" };
-            if (pagnume == remnumd) indicadorQuienpaga = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorPagadorFlete_Remitente" };
-            else indicadorQuienpaga = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorPagadorFlete_Tercero" };
+            if (codGuia == "31")
+            {
+                if (pagnume == remnumd) indicadorQuienpaga = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorPagadorFlete_Remitente" };
+                else indicadorQuienpaga = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorPagadorFlete_Tercero" };
+            }
             ShipmentType traslado = new ShipmentType
             {
                 ID = new IDType { Value = "1" },
@@ -840,7 +869,7 @@ namespace xmlGRE
                 */
             };
 
-            // DETALLE DE LA GUIA DE REMISION TRANSPORTISTA    // Cant,Umed,Peso,Desc1,Desc2
+            // DETALLE DE LA GUIA DE REMISION ELECTRONICA
             DespatchLineType[] detalle = new DespatchLineType[]
             {
                 new DespatchLineType {
@@ -911,8 +940,405 @@ namespace xmlGRE
                         serial.Serialize(xmlWriter, _comprobante, xns);
                     }
                     Console.WriteLine("Exito -> " + fs.ToString());
+                    retorna = "Exito";
                 }
             }
+            return retorna;
+        }
+        private static string UsoUBLDespachR(string Pruta, string IndFir, string RAcert, string Clacert,
+            string rucEmi, string nomEmi, string dirEmi, string ubiEmi, string depEmi, string proEmi, string disEmi, string urbEmi, string paiEmi, string corEmi,
+            string codGuia, string nomGuia, string numGuia, string fecEmis, string horEmis, int cantBul, decimal pesoTot, string codunis, string feciniT, bool cargaun,
+            string docRelnu1, string docRelti1, string docRelnr1, string docRelcs1, string docRelnm1, string docRelnu2, string docRelti2, string docRelnr2, string docRelcs2, string docRelnm2,
+            string dstdocu, string dstnomt, string dstnumd, string dstnomb, string dstdire, string dstubig,
+            string remdocu, string remnomt, string remnumd, string remnomb, string remdirec, string remubig,
+            string pagdocu, string pagnomt, string pagnume, string pagnomb, string scontip, string sconnoT, string sconnum, string sconnom,
+            string envPlaca1, string envAutor1, string envRegis1, string envCodEn1, string envNomEn1, string envPlaca2, string envAutor2, string envRegis2, string envCodEn2, string envNomEn2,
+            string choTipDi1, string choNumDi1, string choNomTi1, string choNombr1, string choApell1, string choLicen1,
+            string choTipDi2, string choNumDi2, string choNomTi2, string choNombr2, string choApell2, string choLicen2,
+            string motTrasCo, string motTrasDe,
+            string dirParubi, string dirPardir, string dirLLeubi, string dirLLedir, string[] deta)         // GUIA REMITENTE
+        {
+            string retorna = "Fallo";
+            // TEXTO TITULO DEL DOCUMENTO
+            NoteType[] nota1 = new NoteType[]
+            {
+                new NoteType{ Value = nomGuia}
+            };
+            // CODIGO TIPO DE DOCUMENTO
+            DespatchAdviceTypeCodeType codtipo = new DespatchAdviceTypeCodeType
+            {
+                listAgencyName = "PE:SUNAT",
+                listName = "Guía de remisión transportista",
+                listURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01",
+                Value = codGuia // "31"
+            };
+
+            #region // DATOS DE EXTENSION DEL DOCUMENTO, acá va principalmente la FIRMA en el caso que el metodo de envío a sunat NO sea SFS
+            XmlDocument xmlDocument = new XmlDocument();
+            XmlElement firma = xmlDocument.CreateElement("ext:firma", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2");  // 31/05/2023
+            UBLExtensionType[] uBLExtensionTypes = new UBLExtensionType[] { new UBLExtensionType { ExtensionContent = firma } };        //  ExtensionContent = firma <- 31/05/2023
+            #endregion
+
+            #region // DATOS DEL DOCUMENTO RELACIONADO
+            PartyType party = new PartyType
+            {
+                PartyIdentification = new PartyIdentificationType[]
+                {
+                    new PartyIdentificationType
+                    {
+                        ID = new IDType { Value = docRelnr1, schemeID = docRelcs1, schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" }
+                    }
+                }
+            };
+            DocumentReferenceType[] refer = new DocumentReferenceType[]
+            {
+                new DocumentReferenceType { ID = new IDType { Value = docRelnu1},    // Si es GR remitente es: SSS-NNNNNNNN = 12 caracteres
+                    DocumentTypeCode = new DocumentTypeCodeType { listAgencyName = "PE:SUNAT", listName = "Documento relacionado al transporte", listURI= "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo61", Value = docRelti1 },  // "50"
+                    DocumentType = new DocumentTypeType { Value = docRelnm1 },
+                    IssuerParty = party
+                },
+            };
+            #endregion
+
+            #region // FIRMA ELECTRONICA DE LA GUIA ELECTRONICA 
+            PartyType iden = new PartyType
+            {
+                PartyIdentification = new PartyIdentificationType[]
+                {
+                    new PartyIdentificationType { ID = new IDType{Value = rucEmi } }
+                },
+                PartyName = new PartyNameType[]
+                {
+                    new PartyNameType { Name = new NameType1 {Value = nomEmi } }   // Value = nomEmi
+                }
+            };
+            AttachmentType atach = new AttachmentType
+            {
+                ExternalReference = new ExternalReferenceType
+                {
+                    URI = new URIType { Value = numGuia }        // Value = "#SFT001-00000001"
+                }
+            };
+            PartyType partid = new PartyType
+            {
+                PartyIdentification = new PartyIdentificationType[]
+                {
+                    new PartyIdentificationType { ID = new IDType { Value = rucEmi } }
+                },
+                PartyName = new PartyNameType[] { new PartyNameType { Name = new NameType1 { Value = nomEmi } } } // Value = nomEmi
+            };
+            AttachmentType attach = new AttachmentType
+            {
+                ExternalReference = new ExternalReferenceType { URI = new URIType { Value = "SigNode" } }
+            };
+            SignatureType tory = new SignatureType
+            {
+                SignatoryParty = partid,
+                DigitalSignatureAttachment = attach
+            };
+            SignatureType[] signature = new SignatureType[]
+            {
+                tory
+            };
+            #endregion
+
+            // DATOS DEL EMISOR DE LA GUIA ELECTRONICA
+            SupplierPartyType prove = new SupplierPartyType
+            {
+                CustomerAssignedAccountID = new CustomerAssignedAccountIDType { Value = rucEmi, schemeID = "6" },     // prueba para el 18/05/2023
+                Party = new PartyType
+                {
+                    PartyIdentification = new PartyIdentificationType[]
+                    {
+                        new PartyIdentificationType { ID = new IDType { Value = rucEmi, schemeID = "6", schemeName = "Registro Unico de Contributentes", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"} }
+                    },
+                    PostalAddress = new AddressType
+                    {
+                        ID = new IDType { Value = ubiEmi },
+                        StreetName = new StreetNameType { Value = dirEmi },
+                        CitySubdivisionName = new CitySubdivisionNameType { Value = urbEmi },
+                        CityName = new CityNameType { Value = depEmi },
+                        CountrySubentity = new CountrySubentityType { Value = proEmi },
+                        District = new DistrictType { Value = disEmi },
+                        Country = new CountryType { IdentificationCode = new IdentificationCodeType { Value = paiEmi } }
+                    },
+                    PartyLegalEntity = new PartyLegalEntityType[]
+                    {
+                        new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = nomEmi } }
+                    },
+                    Contact = new ContactType { ElectronicMail = new ElectronicMailType { Value = corEmi } }
+                }
+            };
+
+            // DATOS DEL DESTINATARIO DE LA GUIA ELECTRONICA     
+            CustomerPartyType cliente = new CustomerPartyType
+            {
+                Party = new PartyType
+                {
+                    PartyIdentification = new PartyIdentificationType[]
+                    {
+                        new PartyIdentificationType { ID = new IDType{ Value = dstnumd, schemeID = dstdocu, schemeName = dstnomt, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"} }
+                    },
+                    PartyLegalEntity = new PartyLegalEntityType[]
+                    {
+                        new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = dstnomb } }
+                    }
+                }
+            };
+
+            /* DATOS DE QUIEN PAGA EL SERVICIO
+            CustomerPartyType pagador = new CustomerPartyType
+            {
+                Party = new PartyType
+                {
+                    PartyIdentification = new PartyIdentificationType[]
+                    {
+                        new PartyIdentificationType { ID = new IDType { Value = pagnume, schemeID = pagdocu, schemeName = pagnomt, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"} }
+                    },
+                    PartyLegalEntity = new PartyLegalEntityType[]
+                    {
+                        new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = pagnomb } }
+                    }
+                }
+            };
+            */
+
+            // Camión contratado ..............
+            ConsignmentType[] contratado;
+            if (scontip != null)
+            {
+                contratado = new ConsignmentType[]
+                {
+                new ConsignmentType { ID = new IDType { Value = "SUNAT_Envio" },        // Value = "SUNAT_Envio"
+                    LogisticsOperatorParty = new PartyType
+                    {
+                        PartyIdentification = new PartyIdentificationType[] { new PartyIdentificationType {
+                            ID = new IDType { Value = sconnum, schemeID = scontip, schemeName = sconnoT, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" } } },
+                        PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = sconnom } } }
+                    }
+                }
+                };
+            }
+            else contratado = new ConsignmentType[] { };
+            // Choferes .......................
+            PersonType[] choferes;
+            if (choTipDi2 != null && choTipDi2 != "")
+            {
+                choferes = new PersonType[]
+                {
+                    new PersonType
+                    {
+                        ID = new IDType { Value = choNumDi1, schemeID = choTipDi1, schemeName = choNomTi1, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" },
+                        FirstName = new FirstNameType { Value = choNombr1 },
+                        FamilyName = new FamilyNameType { Value = choApell1 },
+                        JobTitle = new JobTitleType { Value = "Principal" },
+                        IdentityDocumentReference = new DocumentReferenceType[] { new DocumentReferenceType { ID = new IDType { Value = choLicen1 } } }
+                    },
+                    new PersonType
+                    {
+                        ID = new IDType { Value = choNumDi2, schemeID = choTipDi2, schemeName = choNomTi2, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" },
+                        FirstName = new FirstNameType { Value = choNombr2 },
+                        FamilyName = new FamilyNameType { Value = choApell2 },
+                        JobTitle = new JobTitleType { Value = "Secundario" },
+                        IdentityDocumentReference = new DocumentReferenceType[] { new DocumentReferenceType { ID = new IDType { Value = choLicen2 } } }
+                    }
+                };
+            }
+            else
+            {
+                choferes = new PersonType[] {
+                    new PersonType
+                    {
+                        ID = new IDType { Value = choNumDi1, schemeID = choTipDi1, schemeName = choNomTi1, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" },
+                        FirstName = new FirstNameType { Value = choNombr1 },
+                        FamilyName = new FamilyNameType { Value = choApell1 },
+                        JobTitle = new JobTitleType { Value = "Principal" },
+                        IdentityDocumentReference = new DocumentReferenceType[] { new DocumentReferenceType { ID = new IDType { Value = choLicen1 } } }
+                    }
+                };
+            }
+            // DATOS DEL TRASLADO, VEHICULOS Y CHOFERES
+            SpecialInstructionsType indicadorSubCont = new SpecialInstructionsType();
+            //SpecialInstructionsType indicadorCargaUnica = new SpecialInstructionsType();
+            //SpecialInstructionsType indicadorQuienpaga = new SpecialInstructionsType();
+            if (scontip != null) indicadorSubCont = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorTrasporteSubcontratado" };
+            //if (cargaun == true) indicadorCargaUnica = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorTrasladoTotal" };
+            //if (pagnume == remnumd) indicadorQuienpaga = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorPagadorFlete_Remitente" };
+            //else indicadorQuienpaga = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorPagadorFlete_Tercero" };
+
+            ShipmentType traslado = new ShipmentType
+            {
+                ID = new IDType { Value = "SUNAT_Envio" },
+                // MOTIVO DEL TRASLADO
+                HandlingCode = new HandlingCodeType { Value = motTrasCo },
+                HandlingInstructions = new HandlingInstructionsType[] { new HandlingInstructionsType { Value = motTrasDe } },
+                GrossWeightMeasure = new GrossWeightMeasureType { Value = pesoTot, unitCode = codunis },                    // Unidad de medida y peso TOTAL de la carga
+                TotalTransportHandlingUnitQuantity = new TotalTransportHandlingUnitQuantityType { Value = cantBul },
+                SpecialInstructions = new SpecialInstructionsType[]
+                {
+                    /*
+                    SUNAT_Envio_IndicadorTransbordoProgramado
+                    SUNAT_Envio_IndicadorRetornoVehiculoEnvaseVacio
+                    SUNAT_Envio_IndicadorRetornoVehiculoVacio
+                    SUNAT_Envio_IndicadorTrasporteSubcontratado
+                    SUNAT_Envio_IndicadorPagadorFlete_Remitente
+                    SUNAT_Envio_IndicadorPagadorFlete_Subcontratador
+                    SUNAT_Envio_IndicadorPagadorFlete_Tercero
+                    SUNAT_Envio_IndicadorTrasladoTotal
+                    */
+                    indicadorSubCont
+                },
+                ShipmentStage = new ShipmentStageType[]                                                     // Datos de la carga, fecha de inicio y choferes
+                {
+                    new ShipmentStageType
+                    {
+                        TransportModeCode = new TransportModeCodeType{ listName = "Modalidad de traslado", listAgencyName = "PE:SUNAT", listURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo18", Value = motTrasCo },
+                        TransitPeriod = new PeriodType {StartDate = new StartDateType { Value = DateTime.Parse(feciniT) } },
+                        CarrierParty = new PartyType[]
+                        {
+                            new PartyType { PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType { Value = envRegis1 } } },
+                                AgentParty = new PartyType{ PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType {Value = envAutor1, schemeID = envCodEn1, schemeName = envNomEn1, schemeAgencyName = "PE:SUNAT", schemeURI= "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } } }
+                        },
+                        DriverPerson = choferes,
+                    }
+                },
+                //Consignment = contratado,
+                Delivery = new DeliveryType                                                             // Direcciones punto de llegada y partida, datos del remitente
+                {
+                    DeliveryAddress = new AddressType
+                    {
+                        ID = new IDType { Value = dirLLeubi, schemeName = "Ubigeos", schemeAgencyName = "PE:INEI" },
+                        AddressTypeCode = new AddressTypeCodeType { listAgencyName = "PE:SUNAT", listName = "Establecimientos anexos", listID = dstnumd, Value = "0000" },   // id=ruc destinat, Valor = cod.local anexo
+                        StreetName = new StreetNameType { Value = dirLLedir },
+                        AddressLine = new AddressLineType[] { new AddressLineType { Line = new LineType { Value = dirLLedir } } }
+                        //LocationCoordinate = esto no es obligatorio, recontra opcional
+                    },
+                    Despatch = new DespatchType
+                    {
+                        DespatchAddress = new AddressType
+                        {
+                            ID = new IDType { Value = dirParubi, schemeName = "Ubigeos", schemeAgencyName = "PE:INEI" },
+                            AddressTypeCode = new AddressTypeCodeType { listAgencyName = "PE:SUNAT", listName = "Establecimientos anexos", listID = remnumd, Value = "0000" },   // id=ruc destinat, Valor = cod.local anexo
+                            AddressLine = new AddressLineType[] { new AddressLineType { Line = new LineType { Value = dirPardir } } }
+                        },
+                        DespatchParty = new PartyType
+                        {
+                            /* ESTA PARTE ES PARA PERMISOS ESPECIALES DEL REMITENTE .... explosivos, insumos drogas, materiales peligrosos, etc.
+                            AgentParty = new PartyType { 
+                                PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType { schemeID = "03", schemeName = "Entidad Autorizadora", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37", Value =  } } }
+                            },
+                            PartyIdentification = new PartyIdentificationType[] { new PartyIdentificationType { ID = new IDType { Value = remnumd, schemeID = remdocu, schemeName = remnomt, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" } } },
+                            PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = remnomb } } }
+                            */
+                        }
+                    }
+                },
+                TransportHandlingUnit = new TransportHandlingUnitType[]
+                {
+                    new TransportHandlingUnitType
+                    {
+                        ID = new IDType{ Value = ""},  // Value = "Numero Contenedor"
+                        TransportEquipment = new TransportEquipmentType[]
+                        {
+                            new TransportEquipmentType { ID = new IDType { Value = envPlaca1},                  //-- PLACA - VEHICULO PRINCIPAL
+                                //ApplicableTransportMeans = new TransportMeansType { RegistrationNationalityID = new RegistrationNationalityIDType{ Value = envRegis1 } },
+                                AttachedTransportEquipment = new TransportEquipmentType[] { new TransportEquipmentType {
+                                    ID = new IDType { Value = envPlaca2 },                                      //-- PLACA - VEHICULO SECUNDARIO O CARRETA 
+                                    //ApplicableTransportMeans = new TransportMeansType { RegistrationNationalityID = new RegistrationNationalityIDType { Value = envRegis2 } },
+                                    ShipmentDocumentReference = new DocumentReferenceType[]         // Tarjeta Unica Circulacion / Cerificado Habilitacion Vehicular - Principal
+                                        { new DocumentReferenceType {ID = new IDType { Value = envAutor2, schemeID = envCodEn2, schemeName = envNomEn2, schemeAgencyName="PE:SUNAT", schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } }
+                                },
+                                ShipmentDocumentReference = new DocumentReferenceType[]
+                                {
+                                    new DocumentReferenceType { ID = new IDType { Value = envAutor1, schemeID = envCodEn1, schemeName = envNomEn1, schemeAgencyName="PE:SUNAT", schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } }
+                                }
+                            }
+                        }
+                    }
+                }
+                /*,
+                FirstArrivalPortLocation = new LocationType1
+                {
+                    ID = new IDType { Value = "Codigo", schemeName = "Puertos", schemeAgencyName = "PE:SUNAT" },
+                    LocationTypeCode = new LocationTypeCodeType { Value = "1" }
+                } 
+                */
+            };
+
+            // DETALLE DE LA GUIA DE REMISION ELECTRONICA
+            DespatchLineType[] detalle = new DespatchLineType[]
+            {
+                new DespatchLineType {
+                    ID = new IDType { Value = "1"},
+                    DeliveredQuantity = new DeliveredQuantityType { Value = decimal.Parse(deta[0]), unitCode = deta[2]},
+                    OrderLineReference = new OrderLineReferenceType[] { new OrderLineReferenceType { LineID = new LineIDType {Value = "1" } } },
+                    Item = new ItemType {
+                        Description = new DescriptionType[] { new DescriptionType { Value = deta[5] + " " + deta[6] } },
+                        SellersItemIdentification = new ItemIdentificationType { ID = new IDType { Value = ""} },
+                        StandardItemIdentification = new ItemIdentificationType { ID = new IDType { Value = "", schemeID = ""} },
+                        //CommodityClassification = new CommodityClassificationType[] {new CommodityClassificationType { ItemClassificationCode = new ItemClassificationCodeType { Value = "50161509", listID = "UNSPSC", listAgencyName = "GS1 US", listName = "Item Classification" } } },
+                        //AdditionalItemProperty = new ItemPropertyType[] {new ItemPropertyType {Value = new ValueType { Value = "3002159000" }, Name = new NameType1 { Value = "SubpartidaNacional"}, NameCode = new NameCodeType { Value = "7020", listAgencyName = "PE:SUNAT", listName = "Propiedad del item", listURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo55" } } }
+                    }
+                },
+            };
+
+            // ARMAMOS EL XML
+            XmlSerializer serial = new XmlSerializer(typeof(DespatchAdviceType));
+            Stream fs = new FileStream(Pruta + rucEmi + "-" + codGuia + "-" + numGuia + ".xml", FileMode.Create, FileAccess.Write);
+            var _comprobante = new DespatchAdviceType();
+            _comprobante.UBLExtensions = uBLExtensionTypes;     //-- DATOS DE EXTENSION DEL DOCUMENTO
+            _comprobante.UBLVersionID = new UBLVersionIDType { Value = "2.1" };
+            _comprobante.CustomizationID = new CustomizationIDType { Value = "2.0" };
+            _comprobante.ID = new IDType { Value = numGuia };                   // "VG01-1000002"
+            _comprobante.IssueDate = new IssueDateType { Value = DateTime.Parse(fecEmis) };  // DateTime.Now.Date         // FECHA DE EMISION
+            _comprobante.IssueTime = new IssueTimeType { Value = horEmis };     // output 
+            _comprobante.DespatchAdviceTypeCode = codtipo;      //-- CODIGO TIPO DE DOCUMENTO
+            _comprobante.Note = nota1;                          //-- TEXTO DEL TIPO DE DOCUMENTO
+            _comprobante.AdditionalDocumentReference = refer;   //-- DOCUMENTO RELACIONADO
+            _comprobante.Signature = signature;                 //-- FIRMA DEL DOCUMENTO
+            _comprobante.DespatchSupplierParty = prove;         //-- DATOS DEL EMISOR (TRANSPORTISTA) --//
+            _comprobante.DeliveryCustomerParty = cliente;       //-- DATOS DEL RECEPTOR (DESTINATARIO) --//
+            //_comprobante.OriginatorCustomerParty = pagador;     //-- DATOS DE QUIEN PAGA EL SERVICIO --//
+            _comprobante.Shipment = traslado;                   //-- DATOS DEL TRASLADO --// 
+            _comprobante.DespatchLine = detalle;                //-- DETALLE DE LA GUIA --//
+
+            var xns = new XmlSerializerNamespaces();
+            xns.Add("", "urn:oasis:names:specification:ubl:schema:xsd:DespatchAdvice-2");
+            xns.Add("cbc", "urn:oasis:names:specification:ubl:schema:xsd:CommonBasicComponents-2");
+            xns.Add("ds", "http://www.w3.org/2000/09/xmldsig#");
+            xns.Add("ext", "urn:oasis:names:specification:ubl:schema:xsd:CommonExtensionComponents-2");
+            xns.Add("cac", "urn:oasis:names:specification:ubl:schema:xsd:CommonAggregateComponents-2");
+            xns.Add("xsd", "http://www.w3.org/2001/XMLSchema");
+
+            if (IndFir == "true")           // llama al metodo que firma y graba el xml firmado
+            {
+                var oStringWriter = new StringWriter();
+                serial.Serialize(XmlWriter.Create(oStringWriter), _comprobante, xns);
+                string stringXml = oStringWriter.ToString();
+                XmlDocument XmlpaFirmar = new XmlDocument();
+                XmlpaFirmar.LoadXml(stringXml);
+                //FirmarDocumentoXml(XmlpaFirmar, "certificado.pfx", "190969Sorol").Save("XmlFirmado.xml");
+                using (Stream stream = fs)
+                {
+                    using (XmlWriter xmlWriter = new XmlTextWriter(stream, Encoding.GetEncoding("ISO-8859-1")))
+                    {
+                        FirmarDocumentoXml(XmlpaFirmar, RAcert, Clacert).Save(xmlWriter);  //  "certificado.pfx", "190969Sorol"
+                    }
+                }
+            }
+            else
+            {
+                using (Stream stream = fs)  // graba el xml sin firmar
+                {
+                    using (XmlWriter xmlWriter = new XmlTextWriter(stream, Encoding.GetEncoding("ISO-8859-1")))
+                    {
+                        serial.Serialize(xmlWriter, _comprobante, xns);
+                    }
+                    Console.WriteLine("Exito -> " + fs.ToString());
+                    retorna = "Exito";
+                }
+            }
+            return retorna;
         }
         public static XmlDocument FirmarDocumentoXml(XmlDocument XmlparaFirmar, string RutaCertificado, string ClaveCertificado)       // 31/05/2023
         {
@@ -1028,6 +1454,8 @@ namespace xmlGRE
         public string DirParDir { get; set; }        // Direcciones Reparto/Entrega - Dirección completa
         public string DirLLeUbi { get; set; }        // Direcciones Reparto/Entrega - Ubigeo punto de llegada
         public string DirLLeDir { get; set; }        // Direcciones Reparto/Entrega - Dirección completa del punto de llegada
+        public string MotTrasCo { get; set; }        // Motivo de traslado - codigo sunat, 
+        public string MotTrasDe { get; set; }        // Motivo de traslado - descripción motivo del traslado
         // 
         public string[] Detalle { get; set; }        // Detalle de la guía
 
