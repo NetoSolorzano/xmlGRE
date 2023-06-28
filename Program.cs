@@ -13,8 +13,8 @@ namespace xmlGRE
 {
     class Program
     {
-        //static string rutaAct = @"c:\TRanscarga\TransCarga.db";
-        static string rutaAct = Directory.GetCurrentDirectory() + @"\TransCarga.db";    // la base de datos siempre debe llamarse Transcarga.db
+        static string rutaAct = @"c:\TRanscarga\TransCarga.db";
+        //static string rutaAct = Directory.GetCurrentDirectory() + @"\TransCarga.db";    // la base de datos siempre debe llamarse Transcarga.db
         public static string CadenaConexion = $"Data Source={rutaAct}";       // este app debe estar dentro del directorio del sistema Ej. c:/transcarga/xmlGRE
         
         static int Main(string[] args)
@@ -649,6 +649,7 @@ namespace xmlGRE
             };
             SignatureType tory = new SignatureType
             {
+                ID = new IDType { Value = "SignSOLORSOFT" },
                 SignatoryParty = partid,
                 DigitalSignatureAttachment = attach
             };
@@ -1033,6 +1034,7 @@ namespace xmlGRE
             };
             SignatureType tory = new SignatureType
             {
+                ID = new IDType { Value = "SignSOLORSOFT" },
                 SignatoryParty = partid,
                 DigitalSignatureAttachment = attach
             };
