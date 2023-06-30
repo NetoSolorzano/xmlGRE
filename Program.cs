@@ -13,8 +13,8 @@ namespace xmlGRE
 {
     class Program
     {
-        static string rutaAct = @"c:\TRanscarga\TransCarga.db";
-        //static string rutaAct = Directory.GetCurrentDirectory() + @"\TransCarga.db";    // la base de datos siempre debe llamarse Transcarga.db
+        //static string rutaAct = @"c:\TRanscarga\TransCarga.db";
+        static string rutaAct = Directory.GetCurrentDirectory() + @"\TransCarga.db";    // la base de datos siempre debe llamarse Transcarga.db
         public static string CadenaConexion = $"Data Source={rutaAct}";       // este app debe estar dentro del directorio del sistema Ej. c:/transcarga/xmlGRE
         
         static int Main(string[] args)
@@ -292,10 +292,13 @@ namespace xmlGRE
             using (SQLiteConnection cnx = new SQLiteConnection(CadenaConexion))
             {
                 cnx.Open();
-                //Console.WriteLine(cnx.State.ToString());
-                string condet = "select * from dt_detgre where NumGuia=@gre";
+                string condet = "";
+                string consulta = "";
+                if (tipg == "31") condet = "select * from dt_detgre where NumGuia=@gre";
+                else condet = "select * from dt_detgrer where NumGuia=@gre";
                 String[] detalle = new string[7];
-                string consulta = "select * from dt_cabgre where NumGuia=@gre";
+                if (tipg == "31") consulta = "select * from dt_cabgre where NumGuia=@gre";
+                else consulta = "select * from dt_cabgrer where NumGuia=@gre";
                 using (SQLiteCommand micon = new SQLiteCommand(condet, cnx))
                 {
                     micon.Parameters.AddWithValue("@gre", PdocuGR);
@@ -378,12 +381,12 @@ namespace xmlGRE
                             var s03 = (lite["SConNumdo"].ToString() != "") ? lite["SConNumdo"].ToString() : null;
                             var s04 = (lite["SconNombr"].ToString() != "") ? lite["SconNombr"].ToString() : null;
                             // datos del envío del (los) camiones, autorizaciones de trackto y carreta
-                            var a01 = lite["EnvPlaca1"].ToString();
+                            var a01 = lite["EnvPlaca1"].ToString().Replace("-","");
                             var a02 = lite["EnvAutor1"].ToString();
                             var a03 = lite["EnvRegis1"].ToString();
                             var a04 = lite["EnvCodEn1"].ToString();
                             var a05 = lite["EnvNomEn1"].ToString();
-                            var a06 = lite["EnvPlaca2"].ToString();
+                            var a06 = (lite["EnvPlaca2"].ToString().Trim() != "") ? lite["EnvPlaca2"].ToString().Replace("-", "") : "";
                             var a07 = lite["EnvAutor2"].ToString();
                             var a08 = lite["EnvRegis2"].ToString();
                             var a09 = lite["EnvCodEn2"].ToString();
@@ -394,13 +397,13 @@ namespace xmlGRE
                             var f03 = lite["ChoNomTi1"].ToString();
                             var f04 = lite["ChoNombr1"].ToString();
                             var f05 = lite["ChoApell1"].ToString();
-                            var f06 = lite["ChoLicen1"].ToString();
+                            var f06 = lite["ChoLicen1"].ToString().Replace("-", "");
                             var f07 = (lite["ChoTipDi2"].ToString() != "") ? lite["ChoTipDi2"].ToString() : null;
                             var f08 = (lite["ChoNumDi2"].ToString() != "") ? lite["ChoNumDi2"].ToString() : null;
                             var f09 = (lite["ChoNomTi2"].ToString() != "") ? lite["ChoNomTi2"].ToString() : null;
                             var f10 = (lite["ChoNombr2"].ToString() != "") ? lite["ChoNombr2"].ToString() : null;
                             var f11 = (lite["ChoApell2"].ToString() != "") ? lite["ChoApell2"].ToString() : null;
-                            var f12 = (lite["ChoLicen2"].ToString() != "") ? lite["ChoLicen2"].ToString() : null;
+                            var f12 = (lite["ChoLicen2"].ToString() != "") ? lite["ChoLicen2"].ToString().Replace("-", "") : null;
                             // datos de direcciones partida y llegada
                             var i01 = lite["DirParUbi"].ToString();
                             var i02 = lite["DirParDir"].ToString();
@@ -409,6 +412,7 @@ namespace xmlGRE
                             // motivo del traslado
                             var m01 = lite["MotTrasCo"].ToString();
                             var m02 = lite["MotTrasDe"].ToString();
+                            var m03 = lite["CodModTra"].ToString();     // codigo sunat modalidad de transporte (propio ó público)
 
                             GRE_T gRE = new GRE_T
                             {
@@ -500,6 +504,7 @@ namespace xmlGRE
                                 // motivo del traslado
                                 MotTrasCo = m01,                     // codigo sunat, 
                                 MotTrasDe = m02,                     // descripción motivo del traslado
+                                CodModTra = m03,                     // código sunat modalidad de transporte
                                 // detalle de la guía
                                 Detalle = detalle                   //new string[5] { "1", "ZZ", "30", "Servicio de Transporte de carga terrestre ", "Dice contener Enseres caseros" }     // Cant,Umed,Peso,Desc1,Desc2
                                 
@@ -530,7 +535,7 @@ namespace xmlGRE
                                     gRE.EnvPlaca1, gRE.EnvAutor1, gRE.EnvRegis1, gRE.EnvCodEn1, gRE.EnvNomEn1, gRE.EnvPlaca2, gRE.EnvAutor2, gRE.EnvRegis2, gRE.EnvCodEn2, gRE.EnvNomEn2,
                                     gRE.ChoTipDi1, gRE.ChoNumDi1, gRE.ChoNomTi1, gRE.ChoNombr1, gRE.ChoApell1, gRE.ChoLicen1,
                                     gRE.ChoTipDi2, gRE.ChoNumDi2, gRE.ChoNomTi2, gRE.ChoNombr2, gRE.ChoApell2, gRE.ChoLicen2,
-                                    gRE.MotTrasCo, gRE.MotTrasDe,
+                                    gRE.MotTrasCo, gRE.MotTrasDe, gRE.CodModTra,
                                     gRE.DirParUbi, gRE.DirParDir, gRE.DirLLeUbi, gRE.DirLLeDir, gRE.Detalle);
                             }
                         }
@@ -956,7 +961,7 @@ namespace xmlGRE
             string envPlaca1, string envAutor1, string envRegis1, string envCodEn1, string envNomEn1, string envPlaca2, string envAutor2, string envRegis2, string envCodEn2, string envNomEn2,
             string choTipDi1, string choNumDi1, string choNomTi1, string choNombr1, string choApell1, string choLicen1,
             string choTipDi2, string choNumDi2, string choNomTi2, string choNombr2, string choApell2, string choLicen2,
-            string motTrasCo, string motTrasDe,
+            string motTrasCo, string motTrasDe, string codModTra,
             string dirParubi, string dirPardir, string dirLLeubi, string dirLLedir, string[] deta)         // GUIA REMITENTE
         {
             string retorna = "Fallo";
@@ -994,7 +999,8 @@ namespace xmlGRE
             DocumentReferenceType[] refer = new DocumentReferenceType[]
             {
                 new DocumentReferenceType { ID = new IDType { Value = docRelnu1},    // Si es GR remitente es: SSS-NNNNNNNN = 12 caracteres
-                    DocumentTypeCode = new DocumentTypeCodeType { listAgencyName = "PE:SUNAT", listName = "Documento relacionado al transporte", listURI= "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo61", Value = docRelti1 },  // "50"
+                    //DocumentTypeCode = new DocumentTypeCodeType { listAgencyName = "PE:SUNAT", listName = "Documento relacionado al transporte", listURI= "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo61", Value = docRelti1 },  // "50"
+                    DocumentTypeCode = new DocumentTypeCodeType{ Value = docRelti1 },
                     DocumentType = new DocumentTypeType { Value = docRelnm1 },
                     IssuerParty = party
                 },
@@ -1088,23 +1094,6 @@ namespace xmlGRE
                 }
             };
 
-            /* DATOS DE QUIEN PAGA EL SERVICIO
-            CustomerPartyType pagador = new CustomerPartyType
-            {
-                Party = new PartyType
-                {
-                    PartyIdentification = new PartyIdentificationType[]
-                    {
-                        new PartyIdentificationType { ID = new IDType { Value = pagnume, schemeID = pagdocu, schemeName = pagnomt, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"} }
-                    },
-                    PartyLegalEntity = new PartyLegalEntityType[]
-                    {
-                        new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = pagnomb } }
-                    }
-                }
-            };
-            */
-
             // Camión contratado ..............
             ConsignmentType[] contratado;
             if (scontip != null)
@@ -1160,14 +1149,63 @@ namespace xmlGRE
                 };
             }
             // DATOS DEL TRASLADO, VEHICULOS Y CHOFERES
-            SpecialInstructionsType indicadorSubCont = new SpecialInstructionsType();
+            //SpecialInstructionsType indicadorSubCont = new SpecialInstructionsType();
             //SpecialInstructionsType indicadorCargaUnica = new SpecialInstructionsType();
             //SpecialInstructionsType indicadorQuienpaga = new SpecialInstructionsType();
-            if (scontip != null) indicadorSubCont = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorTrasporteSubcontratado" };
+            //if (scontip != null) indicadorSubCont = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorTrasporteSubcontratado" };
             //if (cargaun == true) indicadorCargaUnica = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorTrasladoTotal" };
             //if (pagnume == remnumd) indicadorQuienpaga = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorPagadorFlete_Remitente" };
             //else indicadorQuienpaga = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorPagadorFlete_Tercero" };
-
+            //TransportHandlingUnitType transports = new TransportHandlingUnitType { };
+            TransportEquipmentType transports = new TransportEquipmentType{ };
+            if (codModTra == "01")  // "01" = transporte público
+            {
+                transports = new TransportEquipmentType
+                {
+                    ID = new IDType { Value = envPlaca1 },                  //-- PLACA - VEHICULO PRINCIPAL
+                                                                            //ApplicableTransportMeans = new TransportMeansType { RegistrationNationalityID = new RegistrationNationalityIDType{ Value = envRegis1 } },
+                    AttachedTransportEquipment = new TransportEquipmentType[] { new TransportEquipmentType {
+                                ID = new IDType { Value = envPlaca2 },                                      //-- PLACA - VEHICULO SECUNDARIO O CARRETA 
+                                //ApplicableTransportMeans = new TransportMeansType { RegistrationNationalityID = new RegistrationNationalityIDType { Value = envRegis2 } },
+                                ShipmentDocumentReference = new DocumentReferenceType[]         // Tarjeta Unica Circulacion / Cerificado Habilitacion Vehicular - Principal
+                                    { new DocumentReferenceType {ID = new IDType { Value = envAutor2, schemeID = envCodEn2, schemeName = envNomEn2, schemeAgencyName="PE:SUNAT", schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } }
+                            },
+                    ShipmentDocumentReference = new DocumentReferenceType[]
+                            {
+                                new DocumentReferenceType { ID = new IDType { Value = envAutor1, schemeID = envCodEn1, schemeName = envNomEn1, schemeAgencyName="PE:SUNAT", schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } }
+                            }
+                            /*
+                    //TransportEquipment = new TransportEquipmentType[]
+                    {
+                        new TransportEquipmentType { ID = new IDType { Value = envPlaca1},                  //-- PLACA - VEHICULO PRINCIPAL
+                            //ApplicableTransportMeans = new TransportMeansType { RegistrationNationalityID = new RegistrationNationalityIDType{ Value = envRegis1 } },
+                            AttachedTransportEquipment = new TransportEquipmentType[] { new TransportEquipmentType {
+                                ID = new IDType { Value = envPlaca2 },                                      //-- PLACA - VEHICULO SECUNDARIO O CARRETA 
+                                //ApplicableTransportMeans = new TransportMeansType { RegistrationNationalityID = new RegistrationNationalityIDType { Value = envRegis2 } },
+                                ShipmentDocumentReference = new DocumentReferenceType[]         // Tarjeta Unica Circulacion / Cerificado Habilitacion Vehicular - Principal
+                                    { new DocumentReferenceType {ID = new IDType { Value = envAutor2, schemeID = envCodEn2, schemeName = envNomEn2, schemeAgencyName="PE:SUNAT", schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } }
+                            },
+                            ShipmentDocumentReference = new DocumentReferenceType[]
+                            {
+                                new DocumentReferenceType { ID = new IDType { Value = envAutor1, schemeID = envCodEn1, schemeName = envNomEn1, schemeAgencyName="PE:SUNAT", schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } }
+                            }
+                        }
+                    }
+                    */
+                };
+            }
+            AddressType ptopartida = null;
+            if (motTrasCo != "18")
+            {
+                ptopartida = new AddressType
+                {
+                    ID = new IDType { Value = dirLLeubi, schemeName = "Ubigeos", schemeAgencyName = "PE:INEI" },    // listID pide que sea ruc -> dstnumd
+                    AddressTypeCode = new AddressTypeCodeType { listAgencyName = "PE:SUNAT", listName = "Establecimientos anexos", listID = dstnumd, Value = "0000" },   // id=ruc destinat, Valor = cod.local anexo
+                    StreetName = new StreetNameType { Value = dirLLedir },
+                    AddressLine = new AddressLineType[] { new AddressLineType { Line = new LineType { Value = dirLLedir } } }
+                    //LocationCoordinate = esto no es obligatorio, recontra opcional
+                };
+            }
             ShipmentType traslado = new ShipmentType
             {
                 ID = new IDType { Value = "SUNAT_Envio" },
@@ -1182,24 +1220,22 @@ namespace xmlGRE
                     SUNAT_Envio_IndicadorTransbordoProgramado
                     SUNAT_Envio_IndicadorRetornoVehiculoEnvaseVacio
                     SUNAT_Envio_IndicadorRetornoVehiculoVacio
-                    SUNAT_Envio_IndicadorTrasporteSubcontratado
-                    SUNAT_Envio_IndicadorPagadorFlete_Remitente
-                    SUNAT_Envio_IndicadorPagadorFlete_Subcontratador
-                    SUNAT_Envio_IndicadorPagadorFlete_Tercero
-                    SUNAT_Envio_IndicadorTrasladoTotal
                     */
-                    indicadorSubCont
+                    //indicadorSubCont
                 },
                 ShipmentStage = new ShipmentStageType[]                                                     // Datos de la carga, fecha de inicio y choferes
                 {
                     new ShipmentStageType
                     {
-                        TransportModeCode = new TransportModeCodeType{ listName = "Modalidad de traslado", listAgencyName = "PE:SUNAT", listURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo18", Value = motTrasCo },
+                        TransportModeCode = new TransportModeCodeType{ listName = "Modalidad de traslado", listAgencyName = "PE:SUNAT", listURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo18", Value = codModTra },
                         TransitPeriod = new PeriodType {StartDate = new StartDateType { Value = DateTime.Parse(feciniT) } },
                         CarrierParty = new PartyType[]
                         {
-                            new PartyType { PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType { Value = envRegis1 } } },
-                                AgentParty = new PartyType{ PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType {Value = envAutor1, schemeID = envCodEn1, schemeName = envNomEn1, schemeAgencyName = "PE:SUNAT", schemeURI= "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } } }
+                            new PartyType {
+                                PartyIdentification = new PartyIdentificationType[] { new PartyIdentificationType { ID = new IDType { schemeID = scontip, schemeName = sconnoT, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06", Value = sconnum } } },
+                                PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = sconnom }, CompanyID = new CompanyIDType { Value = envRegis1 } } },
+                                AgentParty = new PartyType{ PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType {Value = envAutor1, schemeID = envCodEn1, schemeName = envNomEn1, schemeAgencyName = "PE:SUNAT", schemeURI= "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } } 
+                            }
                         },
                         DriverPerson = choferes,
                     }
@@ -1207,14 +1243,16 @@ namespace xmlGRE
                 //Consignment = contratado,
                 Delivery = new DeliveryType                                                             // Direcciones punto de llegada y partida, datos del remitente
                 {
+                    DeliveryAddress = ptopartida,
+                    /*
                     DeliveryAddress = new AddressType
                     {
-                        ID = new IDType { Value = dirLLeubi, schemeName = "Ubigeos", schemeAgencyName = "PE:INEI" },
+                        ID = new IDType { Value = dirLLeubi, schemeName = "Ubigeos", schemeAgencyName = "PE:INEI" },    // listID pide que sea ruc -> dstnumd
                         AddressTypeCode = new AddressTypeCodeType { listAgencyName = "PE:SUNAT", listName = "Establecimientos anexos", listID = dstnumd, Value = "0000" },   // id=ruc destinat, Valor = cod.local anexo
                         StreetName = new StreetNameType { Value = dirLLedir },
                         AddressLine = new AddressLineType[] { new AddressLineType { Line = new LineType { Value = dirLLedir } } }
                         //LocationCoordinate = esto no es obligatorio, recontra opcional
-                    },
+                    }, */
                     Despatch = new DespatchType
                     {
                         DespatchAddress = new AddressType
@@ -1237,34 +1275,13 @@ namespace xmlGRE
                 },
                 TransportHandlingUnit = new TransportHandlingUnitType[]
                 {
-                    new TransportHandlingUnitType
-                    {
-                        ID = new IDType{ Value = ""},  // Value = "Numero Contenedor"
+                    new TransportHandlingUnitType { 
                         TransportEquipment = new TransportEquipmentType[]
                         {
-                            new TransportEquipmentType { ID = new IDType { Value = envPlaca1},                  //-- PLACA - VEHICULO PRINCIPAL
-                                //ApplicableTransportMeans = new TransportMeansType { RegistrationNationalityID = new RegistrationNationalityIDType{ Value = envRegis1 } },
-                                AttachedTransportEquipment = new TransportEquipmentType[] { new TransportEquipmentType {
-                                    ID = new IDType { Value = envPlaca2 },                                      //-- PLACA - VEHICULO SECUNDARIO O CARRETA 
-                                    //ApplicableTransportMeans = new TransportMeansType { RegistrationNationalityID = new RegistrationNationalityIDType { Value = envRegis2 } },
-                                    ShipmentDocumentReference = new DocumentReferenceType[]         // Tarjeta Unica Circulacion / Cerificado Habilitacion Vehicular - Principal
-                                        { new DocumentReferenceType {ID = new IDType { Value = envAutor2, schemeID = envCodEn2, schemeName = envNomEn2, schemeAgencyName="PE:SUNAT", schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } }
-                                },
-                                ShipmentDocumentReference = new DocumentReferenceType[]
-                                {
-                                    new DocumentReferenceType { ID = new IDType { Value = envAutor1, schemeID = envCodEn1, schemeName = envNomEn1, schemeAgencyName="PE:SUNAT", schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } }
-                                }
-                            }
-                        }
-                    }
-                }
-                /*,
-                FirstArrivalPortLocation = new LocationType1
-                {
-                    ID = new IDType { Value = "Codigo", schemeName = "Puertos", schemeAgencyName = "PE:SUNAT" },
-                    LocationTypeCode = new LocationTypeCodeType { Value = "1" }
-                } 
-                */
+                            new TransportEquipmentType {  ID = new IDType { Value = envPlaca1} }
+                        } 
+                    },
+                },
             };
 
             // DETALLE DE LA GUIA DE REMISION ELECTRONICA
@@ -1458,6 +1475,7 @@ namespace xmlGRE
         public string DirLLeDir { get; set; }        // Direcciones Reparto/Entrega - Dirección completa del punto de llegada
         public string MotTrasCo { get; set; }        // Motivo de traslado - codigo sunat, 
         public string MotTrasDe { get; set; }        // Motivo de traslado - descripción motivo del traslado
+        public string CodModTra { get; set; }        // Código sunat modalidad de transporte
         // 
         public string[] Detalle { get; set; }        // Detalle de la guía
 
