@@ -1093,7 +1093,7 @@ namespace xmlGRE
                     }
                 }
             };
-
+            // DATOS DEL TRASLADO, VEHICULOS Y CHOFERES
             // Camión contratado ..............
             ConsignmentType[] contratado;
             if (scontip != null)
@@ -1148,15 +1148,20 @@ namespace xmlGRE
                     }
                 };
             }
-            // DATOS DEL TRASLADO, VEHICULOS Y CHOFERES
-            //SpecialInstructionsType indicadorSubCont = new SpecialInstructionsType();
-            //SpecialInstructionsType indicadorCargaUnica = new SpecialInstructionsType();
-            //SpecialInstructionsType indicadorQuienpaga = new SpecialInstructionsType();
-            //if (scontip != null) indicadorSubCont = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorTrasporteSubcontratado" };
-            //if (cargaun == true) indicadorCargaUnica = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorTrasladoTotal" };
-            //if (pagnume == remnumd) indicadorQuienpaga = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorPagadorFlete_Remitente" };
-            //else indicadorQuienpaga = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorPagadorFlete_Tercero" };
-            //TransportHandlingUnitType transports = new TransportHandlingUnitType { };
+            SpecialInstructionsType indicadorVehiculoMenor = null;
+            PartyType[] vehiculos = null;
+            if (envPlaca1 == "" && envPlaca2 == "")
+            {
+                indicadorVehiculoMenor = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorTrasladoVehiculoM1L" };
+                vehiculos = new PartyType[]
+                {
+                    new PartyType {
+                        PartyIdentification = new PartyIdentificationType[] { new PartyIdentificationType { ID = new IDType { schemeID = scontip, schemeName = sconnoT, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06", Value = sconnum } } },
+                        PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = sconnom }, CompanyID = new CompanyIDType { Value = envRegis1 } } },
+                        AgentParty = new PartyType { PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType { Value = envAutor1, schemeID = envCodEn1, schemeName = envNomEn1, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } }
+                    }
+                };
+            }
             TransportEquipmentType transports = new TransportEquipmentType{ };
             if (codModTra == "01")  // "01" = transporte público
             {
@@ -1216,12 +1221,7 @@ namespace xmlGRE
                 TotalTransportHandlingUnitQuantity = new TotalTransportHandlingUnitQuantityType { Value = cantBul },
                 SpecialInstructions = new SpecialInstructionsType[]
                 {
-                    /*
-                    SUNAT_Envio_IndicadorTransbordoProgramado
-                    SUNAT_Envio_IndicadorRetornoVehiculoEnvaseVacio
-                    SUNAT_Envio_IndicadorRetornoVehiculoVacio
-                    */
-                    //indicadorSubCont
+                    indicadorVehiculoMenor
                 },
                 ShipmentStage = new ShipmentStageType[]                                                     // Datos de la carga, fecha de inicio y choferes
                 {
@@ -1229,6 +1229,8 @@ namespace xmlGRE
                     {
                         TransportModeCode = new TransportModeCodeType{ listName = "Modalidad de traslado", listAgencyName = "PE:SUNAT", listURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo18", Value = codModTra },
                         TransitPeriod = new PeriodType {StartDate = new StartDateType { Value = DateTime.Parse(feciniT) } },
+                        CarrierParty = vehiculos,
+                        /*
                         CarrierParty = new PartyType[]
                         {
                             new PartyType {
@@ -1237,6 +1239,7 @@ namespace xmlGRE
                                 AgentParty = new PartyType{ PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType {Value = envAutor1, schemeID = envCodEn1, schemeName = envNomEn1, schemeAgencyName = "PE:SUNAT", schemeURI= "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } } 
                             }
                         },
+                        */
                         DriverPerson = choferes,
                     }
                 },
