@@ -965,6 +965,8 @@ namespace xmlGRE
             string dirParubi, string dirPardir, string dirLLeubi, string dirLLedir, string[] deta)         // GUIA REMITENTE
         {
             string retorna = "Fallo";
+            if (feciniT == "") feciniT = fecEmis;
+
             // TEXTO TITULO DEL DOCUMENTO
             NoteType[] nota1 = new NoteType[]
             {
@@ -974,9 +976,9 @@ namespace xmlGRE
             DespatchAdviceTypeCodeType codtipo = new DespatchAdviceTypeCodeType
             {
                 listAgencyName = "PE:SUNAT",
-                listName = "Guía de remisión transportista",
+                listName = "Tipo de Documento",
                 listURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01",
-                Value = codGuia // "31"
+                Value = codGuia
             };
 
             #region // DATOS DE EXTENSION DEL DOCUMENTO, acá va principalmente la FIRMA en el caso que el metodo de envío a sunat NO sea SFS
@@ -1050,7 +1052,7 @@ namespace xmlGRE
             };
             #endregion
 
-            // DATOS DEL EMISOR DE LA GUIA ELECTRONICA
+            // DATOS DEL EMISOR DE LA GUIA ELECTRONICA (REMITENTE)
             SupplierPartyType prove = new SupplierPartyType
             {
                 CustomerAssignedAccountID = new CustomerAssignedAccountIDType { Value = rucEmi, schemeID = "6" },     // prueba para el 18/05/2023
@@ -1058,7 +1060,7 @@ namespace xmlGRE
                 {
                     PartyIdentification = new PartyIdentificationType[]
                     {
-                        new PartyIdentificationType { ID = new IDType { Value = rucEmi, schemeID = "6", schemeName = "Registro Unico de Contributentes", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"} }
+                        new PartyIdentificationType { ID = new IDType { Value = rucEmi, schemeID = "6", schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"} }
                     },
                     PostalAddress = new AddressType
                     {
@@ -1085,7 +1087,7 @@ namespace xmlGRE
                 {
                     PartyIdentification = new PartyIdentificationType[]
                     {
-                        new PartyIdentificationType { ID = new IDType{ Value = dstnumd, schemeID = dstdocu, schemeName = dstnomt, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"} }
+                        new PartyIdentificationType { ID = new IDType{ Value = dstnumd, schemeID = dstdocu, schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"} }
                     },
                     PartyLegalEntity = new PartyLegalEntityType[]
                     {
@@ -1112,53 +1114,66 @@ namespace xmlGRE
             }
             else contratado = new ConsignmentType[] { };
             // Choferes .......................
-            PersonType[] choferes;
+            PersonType[] choferes = null;
             if (choTipDi2 != null && choTipDi2 != "")
             {
-                choferes = new PersonType[]
+                if (choTipDi1 != null && choTipDi1 != "")
                 {
-                    new PersonType
+                    choferes = new PersonType[]
                     {
-                        ID = new IDType { Value = choNumDi1, schemeID = choTipDi1, schemeName = choNomTi1, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" },
-                        FirstName = new FirstNameType { Value = choNombr1 },
-                        FamilyName = new FamilyNameType { Value = choApell1 },
-                        JobTitle = new JobTitleType { Value = "Principal" },
-                        IdentityDocumentReference = new DocumentReferenceType[] { new DocumentReferenceType { ID = new IDType { Value = choLicen1 } } }
-                    },
-                    new PersonType
-                    {
-                        ID = new IDType { Value = choNumDi2, schemeID = choTipDi2, schemeName = choNomTi2, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" },
-                        FirstName = new FirstNameType { Value = choNombr2 },
-                        FamilyName = new FamilyNameType { Value = choApell2 },
-                        JobTitle = new JobTitleType { Value = "Secundario" },
-                        IdentityDocumentReference = new DocumentReferenceType[] { new DocumentReferenceType { ID = new IDType { Value = choLicen2 } } }
-                    }
-                };
+                        new PersonType
+                        {
+                            ID = new IDType { Value = choNumDi1, schemeID = choTipDi1, schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" },
+                            FirstName = new FirstNameType { Value = choNombr1 },
+                            FamilyName = new FamilyNameType { Value = choApell1 },
+                            JobTitle = new JobTitleType { Value = "Principal" },
+                            IdentityDocumentReference = new DocumentReferenceType[] { new DocumentReferenceType { ID = new IDType { Value = choLicen1 } } }
+                        },
+                        new PersonType
+                        {
+                            ID = new IDType { Value = choNumDi2, schemeID = choTipDi2, schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" },
+                            FirstName = new FirstNameType { Value = choNombr2 },
+                            FamilyName = new FamilyNameType { Value = choApell2 },
+                            JobTitle = new JobTitleType { Value = "Secundario" },
+                            IdentityDocumentReference = new DocumentReferenceType[] { new DocumentReferenceType { ID = new IDType { Value = choLicen2 } } }
+                        }
+                    };
+                }
+                else
+                {
+                    // caso imposible, no se permite chofer 2 y no existir chofer 1, esto se valida en el form
+                }
             }
             else
             {
-                choferes = new PersonType[] {
+                if (choNumDi1 != null && choNumDi1 != "")
+                {
+                    choferes = new PersonType[] {
                     new PersonType
-                    {
-                        ID = new IDType { Value = choNumDi1, schemeID = choTipDi1, schemeName = choNomTi1, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" },
-                        FirstName = new FirstNameType { Value = choNombr1 },
-                        FamilyName = new FamilyNameType { Value = choApell1 },
-                        JobTitle = new JobTitleType { Value = "Principal" },
-                        IdentityDocumentReference = new DocumentReferenceType[] { new DocumentReferenceType { ID = new IDType { Value = choLicen1 } } }
-                    }
-                };
+                        {
+                            ID = new IDType { Value = choNumDi1, schemeID = choTipDi1, schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" },
+                            FirstName = new FirstNameType { Value = choNombr1 },
+                            FamilyName = new FamilyNameType { Value = choApell1 },
+                            JobTitle = new JobTitleType { Value = "Principal" },
+                            IdentityDocumentReference = new DocumentReferenceType[] { new DocumentReferenceType { ID = new IDType { Value = choLicen1 } } }
+                        }
+                    };
+                }
             }
             SpecialInstructionsType indicadorVehiculoMenor = null;
             PartyType[] vehiculos = null;
-            if (envPlaca1 == "" && envPlaca2 == "")
+            if (envPlaca1 == "") //  && envPlaca2 == ""
             {
                 indicadorVehiculoMenor = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorTrasladoVehiculoM1L" };
+            }
+            else
+            {
                 vehiculos = new PartyType[]
                 {
                     new PartyType {
                         PartyIdentification = new PartyIdentificationType[] { new PartyIdentificationType { ID = new IDType { schemeID = scontip, schemeName = sconnoT, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06", Value = sconnum } } },
                         PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = sconnom }, CompanyID = new CompanyIDType { Value = envRegis1 } } },
-                        AgentParty = new PartyType { PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType { Value = envAutor1, schemeID = envCodEn1, schemeName = envNomEn1, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } }
+                        AgentParty = new PartyType { PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType { Value = envAutor1, schemeID = envCodEn1, schemeName = "Entidad Autorizadora", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } }
                     }
                 };
             }
@@ -1239,8 +1254,8 @@ namespace xmlGRE
                                 AgentParty = new PartyType{ PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType {Value = envAutor1, schemeID = envCodEn1, schemeName = envNomEn1, schemeAgencyName = "PE:SUNAT", schemeURI= "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } } 
                             }
                         },
-                        */
-                        DriverPerson = choferes,
+                        
+                        DriverPerson = choferes, */
                     }
                 },
                 //Consignment = contratado,
@@ -1276,15 +1291,16 @@ namespace xmlGRE
                         }
                     }
                 },
-                TransportHandlingUnit = new TransportHandlingUnitType[]
+                /*TransportHandlingUnit = new TransportHandlingUnitType[]
                 {
                     new TransportHandlingUnitType { 
                         TransportEquipment = new TransportEquipmentType[]
                         {
-                            new TransportEquipmentType {  ID = new IDType { Value = envPlaca1} }
+                            //new TransportEquipmentType {  ID = new IDType { Value = envPlaca1} }
+                            transports
                         } 
                     },
-                },
+                }, */
             };
 
             // DETALLE DE LA GUIA DE REMISION ELECTRONICA
@@ -1297,7 +1313,7 @@ namespace xmlGRE
                     Item = new ItemType {
                         Description = new DescriptionType[] { new DescriptionType { Value = deta[5] + " " + deta[6] } },
                         SellersItemIdentification = new ItemIdentificationType { ID = new IDType { Value = ""} },
-                        StandardItemIdentification = new ItemIdentificationType { ID = new IDType { Value = "", schemeID = ""} },
+                        //StandardItemIdentification = new ItemIdentificationType { ID = new IDType { Value = "", schemeID = ""} },
                         //CommodityClassification = new CommodityClassificationType[] {new CommodityClassificationType { ItemClassificationCode = new ItemClassificationCodeType { Value = "50161509", listID = "UNSPSC", listAgencyName = "GS1 US", listName = "Item Classification" } } },
                         //AdditionalItemProperty = new ItemPropertyType[] {new ItemPropertyType {Value = new ValueType { Value = "3002159000" }, Name = new NameType1 { Value = "SubpartidaNacional"}, NameCode = new NameCodeType { Value = "7020", listAgencyName = "PE:SUNAT", listName = "Propiedad del item", listURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo55" } } }
                     }
