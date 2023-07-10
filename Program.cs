@@ -571,7 +571,7 @@ namespace xmlGRE
             DespatchAdviceTypeCodeType codtipo = new DespatchAdviceTypeCodeType
             {
                 listAgencyName = "PE:SUNAT",
-                listName = "Guía de remisión transportista",
+                listName = "Tipo de Documento",
                 listURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo01",
                 Value = codGuia // "31"
             };
@@ -672,7 +672,7 @@ namespace xmlGRE
                 { 
                     PartyIdentification = new PartyIdentificationType[]
                     {
-                        new PartyIdentificationType { ID = new IDType { Value = rucEmi, schemeID = "6", schemeName = "Registro Unico de Contributentes", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"} }
+                        new PartyIdentificationType { ID = new IDType { Value = rucEmi, schemeID = "6", schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"} }
                     },
                     PostalAddress = new AddressType 
                     { 
@@ -699,7 +699,7 @@ namespace xmlGRE
                 {
                     PartyIdentification = new PartyIdentificationType[]
                     {
-                        new PartyIdentificationType { ID = new IDType{ Value = dstnumd, schemeID = dstdocu, schemeName = dstnomt, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"} }
+                        new PartyIdentificationType { ID = new IDType{ Value = dstnumd, schemeID = dstdocu, schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"} }
                     },
                     PartyLegalEntity = new PartyLegalEntityType[]
                     {
@@ -715,7 +715,7 @@ namespace xmlGRE
                 {
                     PartyIdentification = new PartyIdentificationType[]
                     {
-                    new PartyIdentificationType { ID = new IDType { Value = pagnume, schemeID = pagdocu, schemeName = pagnomt, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"} }
+                    new PartyIdentificationType { ID = new IDType { Value = pagnume, schemeID = pagdocu, schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"} }
                     },
                     PartyLegalEntity = new PartyLegalEntityType[]
                     {
@@ -734,7 +734,7 @@ namespace xmlGRE
                     LogisticsOperatorParty = new PartyType
                     {
                         PartyIdentification = new PartyIdentificationType[] { new PartyIdentificationType {
-                            ID = new IDType { Value = sconnum, schemeID = scontip, schemeName = sconnoT, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" } } },
+                            ID = new IDType { Value = sconnum, schemeID = scontip, schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" } } },
                         PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = sconnom } } }
                     }
                 }
@@ -749,7 +749,7 @@ namespace xmlGRE
                 {
                     new PersonType
                     {
-                        ID = new IDType { Value = choNumDi1, schemeID = choTipDi1, schemeName = choNomTi1, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" },
+                        ID = new IDType { Value = choNumDi1, schemeID = choTipDi1, schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" },
                         FirstName = new FirstNameType { Value = choNombr1 },
                         FamilyName = new FamilyNameType { Value = choApell1 },
                         JobTitle = new JobTitleType { Value = "Principal" },
@@ -757,7 +757,7 @@ namespace xmlGRE
                     },
                     new PersonType
                     {
-                        ID = new IDType { Value = choNumDi2, schemeID = choTipDi2, schemeName = choNomTi2, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" },
+                        ID = new IDType { Value = choNumDi2, schemeID = choTipDi2, schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" },
                         FirstName = new FirstNameType { Value = choNombr2 },
                         FamilyName = new FamilyNameType { Value = choApell2 },
                         JobTitle = new JobTitleType { Value = "Secundario" },
@@ -779,9 +779,9 @@ namespace xmlGRE
                 };
             }
             // DATOS DEL TRASLADO, VEHICULOS Y CHOFERES
-            SpecialInstructionsType indicadorSubCont = new SpecialInstructionsType();
-            SpecialInstructionsType indicadorCargaUnica = new SpecialInstructionsType();
-            SpecialInstructionsType indicadorQuienpaga = new SpecialInstructionsType();
+            SpecialInstructionsType indicadorSubCont = null;
+            SpecialInstructionsType indicadorCargaUnica = null;
+            SpecialInstructionsType indicadorQuienpaga = null;
             if (scontip != null) indicadorSubCont = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorTrasporteSubcontratado" };
             if (cargaun == true) indicadorCargaUnica = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorTrasladoTotal" };
             if (codGuia == "31")
