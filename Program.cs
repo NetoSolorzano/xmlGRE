@@ -13,8 +13,8 @@ namespace xmlGRE
 {
     class Program
     {
-        static string rutaAct = @"c:\TRanscarga\TransCarga.db";
-        //static string rutaAct = Directory.GetCurrentDirectory() + @"\TransCarga.db";    // la base de datos siempre debe llamarse Transcarga.db
+        //static string rutaAct = @"c:\TRanscarga\TransCarga.db";
+        static string rutaAct = Directory.GetCurrentDirectory() + @"\TransCarga.db";    // la base de datos siempre debe llamarse Transcarga.db
         public static string CadenaConexion = $"Data Source={rutaAct}";       // este app debe estar dentro del directorio del sistema Ej. c:/transcarga/xmlGRE
         
         static int Main(string[] args)
@@ -597,7 +597,7 @@ namespace xmlGRE
                             //LocationCoordinate = esto no es obligatorio, recontra opcional
                         },
                         DespatchParty = new PartyType { 
-                            PartyIdentification = new PartyIdentificationType[] { new PartyIdentificationType { ID = new IDType { Value = remnumd, schemeID = remdocu, schemeName = remnomt, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" } } }, 
+                            PartyIdentification = new PartyIdentificationType[] { new PartyIdentificationType { ID = new IDType { Value = remnumd, schemeID = remdocu, schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" } } }, 
                             PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = remnomb } } }
                         }
                     }
@@ -615,11 +615,11 @@ namespace xmlGRE
                                     ID = new IDType { Value = envPlaca2 },                                      //-- PLACA - VEHICULO SECUNDARIO O CARRETA 
                                     ApplicableTransportMeans = new TransportMeansType { RegistrationNationalityID = new RegistrationNationalityIDType { Value = envAutor2 } },   // envRegis2
                                     ShipmentDocumentReference = new DocumentReferenceType[]         // Tarjeta Unica Circulacion / Cerificado Habilitacion Vehicular - Principal
-                                        { new DocumentReferenceType {ID = new IDType { Value = envAutor2, schemeID = envCodEn2, schemeName = "Entidad Autorizadora", schemeAgencyName="PE:SUNAT", schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } }
+                                        { new DocumentReferenceType {ID = new IDType { Value = envRegis2, schemeID = envCodEn2, schemeName = "Entidad Autorizadora", schemeAgencyName="PE:SUNAT", schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } }    // envAutor2
                                 },
                                 ShipmentDocumentReference = new DocumentReferenceType[]
                                 {
-                                    new DocumentReferenceType { ID = new IDType { Value = envAutor1, schemeID = envCodEn1, schemeName = "Entidad Autorizadora", schemeAgencyName="PE:SUNAT", schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } 
+                                    new DocumentReferenceType { ID = new IDType { Value = envRegis1, schemeID = envCodEn1, schemeName = "Entidad Autorizadora", schemeAgencyName="PE:SUNAT", schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } }     // envAutor1
                                 }
                             } 
                         }
