@@ -874,12 +874,14 @@ namespace xmlGRE
             else contratado = new ConsignmentType[] { };
             // Choferes .......................
             PersonType[] choferes = null;
-            if (choTipDi2 != null && choTipDi2 != "")
+            if (codModTra == "02")  // datos de choferes va en transporte privado solamente
             {
-                if (choTipDi1 != null && choTipDi1 != "")
+                if (choTipDi2 != null && choTipDi2 != "")
                 {
-                    choferes = new PersonType[]
+                    if (choTipDi1 != null && choTipDi1 != "")
                     {
+                        choferes = new PersonType[]
+                        {
                         new PersonType
                         {
                             ID = new IDType { Value = choNumDi1, schemeID = choTipDi1, schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" },
@@ -896,18 +898,18 @@ namespace xmlGRE
                             JobTitle = new JobTitleType { Value = "Secundario" },
                             IdentityDocumentReference = new DocumentReferenceType[] { new DocumentReferenceType { ID = new IDType { Value = choLicen2 } } }
                         }
-                    };
+                        };
+                    }
+                    else
+                    {
+                        // caso imposible, no se permite chofer 2 y no existir chofer 1, esto se valida en el form
+                    }
                 }
                 else
                 {
-                    // caso imposible, no se permite chofer 2 y no existir chofer 1, esto se valida en el form
-                }
-            }
-            else
-            {
-                if (choNumDi1 != null && choNumDi1 != "")
-                {
-                    choferes = new PersonType[] {
+                    if (choNumDi1 != null && choNumDi1 != "")
+                    {
+                        choferes = new PersonType[] {
                     new PersonType
                         {
                             ID = new IDType { Value = choNumDi1, schemeID = choTipDi1, schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" },
@@ -917,6 +919,7 @@ namespace xmlGRE
                             IdentityDocumentReference = new DocumentReferenceType[] { new DocumentReferenceType { ID = new IDType { Value = choLicen1 } } }
                         }
                     };
+                    }
                 }
             }
             SpecialInstructionsType indicadorVehiculoMenor = null;
@@ -927,15 +930,22 @@ namespace xmlGRE
             }
             else
             {
-                vehiculos = new PartyType[]
+                if (codModTra == "01")  // Solo modalidad de traslado PUBLICO=01 lleva datos del transportista, el 02=privado no lleva estos datos 19/07/2023
                 {
-                    new PartyType {
-                        PartyIdentification = new PartyIdentificationType[] { new PartyIdentificationType { ID = new IDType { schemeID = scontip, schemeName = sconnoT, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06", Value = sconnum } } },
-                        PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = sconnom }, CompanyID = new CompanyIDType { Value = envRegis1 } } },
-                        AgentParty = new PartyType { PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType { Value = envAutor1, schemeID = envCodEn1, schemeName = "Entidad Autorizadora", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } }
-                    }
-                };
+                    vehiculos = new PartyType[]
+                    {
+                        new PartyType {
+                            PartyIdentification = new PartyIdentificationType[] { new PartyIdentificationType { ID = new IDType { schemeID = scontip, schemeName = sconnoT, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06", Value = sconnum } } },
+                            PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = sconnom }, CompanyID = new CompanyIDType { Value = envRegis1 } } },
+                            AgentParty = new PartyType { PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType { Value = envAutor1, schemeID = envCodEn1, schemeName = "Entidad Autorizadora", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } }
+                        }
+                    };
+                }
             }
+
+            TransportMeansType placa = null;    // en el caso de TRANSPORTE PRIVADO 02, va la placa del vehículo
+            if (codModTra == "02") placa = new TransportMeansType { RoadTransport = new RoadTransportType { LicensePlateID = new LicensePlateIDType { Value = envPlaca1 } } };
+
             TransportEquipmentType transports = new TransportEquipmentType{ };
             if (codModTra == "01")  // "01" = transporte público
             {
@@ -1004,17 +1014,8 @@ namespace xmlGRE
                         TransportModeCode = new TransportModeCodeType{ listName = "Modalidad de traslado", listAgencyName = "PE:SUNAT", listURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo18", Value = codModTra },
                         TransitPeriod = new PeriodType {StartDate = new StartDateType { Value = DateTime.Parse(feciniT) } },
                         CarrierParty = vehiculos,
-                        /*
-                        CarrierParty = new PartyType[]
-                        {
-                            new PartyType {
-                                PartyIdentification = new PartyIdentificationType[] { new PartyIdentificationType { ID = new IDType { schemeID = scontip, schemeName = sconnoT, schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06", Value = sconnum } } },
-                                PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = sconnom }, CompanyID = new CompanyIDType { Value = envRegis1 } } },
-                                AgentParty = new PartyType{ PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType {Value = envAutor1, schemeID = envCodEn1, schemeName = envNomEn1, schemeAgencyName = "PE:SUNAT", schemeURI= "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } } 
-                            }
-                        },
-                        
-                        DriverPerson = choferes, */
+                        TransportMeans = placa,
+                        DriverPerson = choferes,
                     }
                 },
                 //Consignment = contratado,
