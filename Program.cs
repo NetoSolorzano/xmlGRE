@@ -543,11 +543,8 @@ namespace xmlGRE
             SpecialInstructionsType indicadorQuienpaga = null;
             if (scontip != null) indicadorSubCont = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorTrasporteSubcontratado" };
             if (cargaun == true) indicadorCargaUnica = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorTrasladoTotal" };
-            if (codGuia == "31")
-            {
-                if (pagnume == remnumd) indicadorQuienpaga = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorPagadorFlete_Remitente" };
-                else indicadorQuienpaga = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorPagadorFlete_Tercero" };
-            }
+            if (pagnume == remnumd) indicadorQuienpaga = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorPagadorFlete_Remitente" };
+            else indicadorQuienpaga = new SpecialInstructionsType { Value = "SUNAT_Envio_IndicadorPagadorFlete_Tercero" };
             ShipmentType traslado = new ShipmentType
             {
                 ID = new IDType { Value = "1" },
@@ -635,42 +632,52 @@ namespace xmlGRE
             };
 
             // DETALLE DE LA GUIA DE REMISION ELECTRONICA
-            DespatchLineType[] detalle = new DespatchLineType[]
+            DespatchLineType[] detalle = null;
+            if (indicadorCargaUnica != null && (
+                "'09','01','04'".Contains(docRelti1) && !"'0','1','2','3','4','5','6','7','8','9'".Contains(docRelnu1.Substring(0, 1)) ||
+                "'50','52'".Contains(docRelti1)))
             {
-                new DespatchLineType {
-                    ID = new IDType { Value = "1"}, 
-                    DeliveredQuantity = new DeliveredQuantityType { Value = decimal.Parse(deta[0]), unitCode = deta[2]},
-                    OrderLineReference = new OrderLineReferenceType[] { new OrderLineReferenceType { LineID = new LineIDType {Value = "1" } } },
-                    Item = new ItemType { 
-                        Description = new DescriptionType[] { new DescriptionType { Value = deta[5] + " " + deta[6] } },
-                        SellersItemIdentification = new ItemIdentificationType { ID = new IDType { Value = ""} },
-                        StandardItemIdentification = new ItemIdentificationType { ID = new IDType { Value = "", schemeID = ""} },
-                        //CommodityClassification = new CommodityClassificationType[] {new CommodityClassificationType { ItemClassificationCode = new ItemClassificationCodeType { Value = "50161509", listID = "UNSPSC", listAgencyName = "GS1 US", listName = "Item Classification" } } },
-                        //AdditionalItemProperty = new ItemPropertyType[] {new ItemPropertyType {Value = new ValueType { Value = "3002159000" }, Name = new NameType1 { Value = "SubpartidaNacional"}, NameCode = new NameCodeType { Value = "7020", listAgencyName = "PE:SUNAT", listName = "Propiedad del item", listURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo55" } } }
-                    }
-                },
-            };
+                // no lleva detalle de los bienes porque sunat dice que es carga total del documento origen
+            }
+            else
+            {
+                detalle = new DespatchLineType[]
+                {
+                    new DespatchLineType {
+                        ID = new IDType { Value = "1"},
+                        DeliveredQuantity = new DeliveredQuantityType { Value = decimal.Parse(deta[0]), unitCode = deta[2], unitCodeListID = "UN/ECE rec 20", unitCodeListAgencyName = "United Nations Economic Commission for Europe"},
+                        OrderLineReference = new OrderLineReferenceType[] { new OrderLineReferenceType { LineID = new LineIDType {Value = "1" } } },
+                        Item = new ItemType {
+                            Description = new DescriptionType[] { new DescriptionType { Value = deta[5] + " " + deta[6] } },
+                            SellersItemIdentification = new ItemIdentificationType { ID = new IDType { Value = ""} },
+                            StandardItemIdentification = new ItemIdentificationType { ID = new IDType { Value = "", schemeID = ""} },
+                            //CommodityClassification = new CommodityClassificationType[] {new CommodityClassificationType { ItemClassificationCode = new ItemClassificationCodeType { Value = "50161509", listID = "UNSPSC", listAgencyName = "GS1 US", listName = "Item Classification" } } },
+                            //AdditionalItemProperty = new ItemPropertyType[] {new ItemPropertyType {Value = new ValueType { Value = "3002159000" }, Name = new NameType1 { Value = "SubpartidaNacional"}, NameCode = new NameCodeType { Value = "7020", listAgencyName = "PE:SUNAT", listName = "Propiedad del item", listURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo55" } } }
+                        }
+                    },
+                };
+            }
 
             // ARMAMOS EL XML
             XmlSerializer serial = new XmlSerializer(typeof(DespatchAdviceType));
             Stream fs = new FileStream(Pruta + rucEmi + "-" + codGuia + "-" + numGuia + ".xml", FileMode.Create, FileAccess.Write);
             var _comprobante = new DespatchAdviceType();
             _comprobante.UBLExtensions = uBLExtensionTypes;     //-- DATOS DE EXTENSION DEL DOCUMENTO
-            _comprobante.UBLVersionID = new UBLVersionIDType { Value = "2.1" };
-            _comprobante.CustomizationID = new CustomizationIDType { Value = "2.0" };
-            _comprobante.ID = new IDType { Value = numGuia };                   // "VG01-1000002"
-            _comprobante.IssueDate = new IssueDateType { Value = DateTime.Parse(fecEmis)};  // DateTime.Now.Date         // FECHA DE EMISION
-            _comprobante.IssueTime = new IssueTimeType { Value = horEmis };     // output 
-            _comprobante.DespatchAdviceTypeCode = codtipo;      //-- CODIGO TIPO DE DOCUMENTO
-            _comprobante.Note = nota1;                          //-- TEXTO DEL TIPO DE DOCUMENTO
-            _comprobante.AdditionalDocumentReference = refer;   //-- DOCUMENTO RELACIONADO
-            if (docRelnu2 != null) _comprobante.AdditionalDocumentReference = refer2;
-            _comprobante.Signature = signature;                 //-- FIRMA DEL DOCUMENTO
-            _comprobante.DespatchSupplierParty = prove;         //-- DATOS DEL EMISOR (TRANSPORTISTA) --//
-            _comprobante.DeliveryCustomerParty = cliente;       //-- DATOS DEL RECEPTOR (DESTINATARIO) --//
-            _comprobante.OriginatorCustomerParty = pagador;     //-- DATOS DE QUIEN PAGA EL SERVICIO --//
-            _comprobante.Shipment = traslado;                   //-- DATOS DEL TRASLADO --// 
-            _comprobante.DespatchLine = detalle;                //-- DETALLE DE LA GUIA --//
+            _comprobante.UBLVersionID = new UBLVersionIDType { Value = "2.1" };     //     .
+            _comprobante.CustomizationID = new CustomizationIDType { Value = "2.0" };   // .
+            _comprobante.ID = new IDType { Value = numGuia };                   // "VG01-1000002"  .
+            _comprobante.IssueDate = new IssueDateType { Value = DateTime.Parse(fecEmis)};  // FECHA DE EMISION  .
+            _comprobante.IssueTime = new IssueTimeType { Value = horEmis };     // output        .
+            _comprobante.DespatchAdviceTypeCode = codtipo;      //-- CODIGO TIPO DE DOCUMENTO    .
+            _comprobante.Note = nota1;                          //-- TEXTO DEL TIPO DE DOCUMENTO .
+            _comprobante.AdditionalDocumentReference = refer;   //-- DOCUMENTO RELACIONADO       .
+            if (docRelnu2 != null) _comprobante.AdditionalDocumentReference = refer2;   //       .
+            _comprobante.Signature = signature;                 //-- FIRMA DEL DOCUMENTO         .
+            _comprobante.DespatchSupplierParty = prove;         //-- DATOS DEL EMISOR (TRANSPORTISTA) --//  .
+            _comprobante.DeliveryCustomerParty = cliente;       //-- DATOS DEL RECEPTOR (DESTINATARIO) --// .
+            _comprobante.OriginatorCustomerParty = pagador;     //-- DATOS DE QUIEN PAGA EL SERVICIO --//   .
+            _comprobante.Shipment = traslado;                   //-- DATOS DEL TRASLADO --//                .
+            _comprobante.DespatchLine = detalle;                //-- DETALLE DE LA GUIA --//                .
 
             var xns = new XmlSerializerNamespaces();
             xns.Add("", "urn:oasis:names:specification:ubl:schema:xsd:DespatchAdvice-2");
