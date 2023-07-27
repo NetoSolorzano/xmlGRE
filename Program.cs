@@ -570,31 +570,35 @@ namespace xmlGRE
                 {
                     new ShipmentStageType
                     {
-                        TransitPeriod = new PeriodType {StartDate = new StartDateType { Value = DateTime.Parse(feciniT) } },
+                        TransitPeriod = new PeriodType { StartDate = new StartDateType { Value = DateTime.Parse(feciniT) } },
                         CarrierParty = new PartyType[]
                         {
                             new PartyType { PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType { Value = envRegis1 } } },
-                                AgentParty = new PartyType{ PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType {Value = envAutor1, schemeID = envCodEn1, schemeName = "Entidad Autorizadora", schemeAgencyName = "PE:SUNAT", schemeURI= "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } } }
+                                AgentParty = new PartyType { PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType { Value = envAutor1, schemeID = envCodEn1, schemeName = "Entidad Autorizadora", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } } }
                         },
                         DriverPerson = choferes,
                     }
                 },
                 Delivery = new DeliveryType                                                             // Direcciones punto de llegada y partida, datos del remitente
                 {
-                    DeliveryAddress = new AddressType { 
-                        ID = new IDType { Value = dirLLeubi, schemeName = "Ubigeos", schemeAgencyName = "PE:INEI" }, 
+                    DeliveryAddress = new AddressType
+                    {
+                        ID = new IDType { Value = dirLLeubi, schemeName = "Ubigeos", schemeAgencyName = "PE:INEI" },
                         StreetName = new StreetNameType { Value = dirLLedir },
                         AddressLine = new AddressLineType[] { new AddressLineType { Line = new LineType { Value = dirLLedir } } }
                         //LocationCoordinate = esto no es obligatorio, recontra opcional
                     },
-                    Despatch = new DespatchType {
-                        DespatchAddress = new AddressType {
-                            ID = new IDType { Value = dirParubi, schemeName = "Ubigeos", schemeAgencyName = "PE:INEI" }, 
+                    Despatch = new DespatchType
+                    {
+                        DespatchAddress = new AddressType
+                        {
+                            ID = new IDType { Value = dirParubi, schemeName = "Ubigeos", schemeAgencyName = "PE:INEI" },
                             AddressLine = new AddressLineType[] { new AddressLineType { Line = new LineType { Value = dirPardir } } }
                             //LocationCoordinate = esto no es obligatorio, recontra opcional
                         },
-                        DespatchParty = new PartyType { 
-                            PartyIdentification = new PartyIdentificationType[] { new PartyIdentificationType { ID = new IDType { Value = remnumd, schemeID = remdocu, schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" } } }, 
+                        DespatchParty = new PartyType
+                        {
+                            PartyIdentification = new PartyIdentificationType[] { new PartyIdentificationType { ID = new IDType { Value = remnumd, schemeID = remdocu, schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06" } } },
                             PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = remnomb } } }
                         }
                     }
@@ -603,34 +607,34 @@ namespace xmlGRE
                 {
                     new TransportHandlingUnitType
                     {
-                        ID = new IDType{ Value = ""},  // Value = "Numero Contenedor"
+                        ID = new IDType { Value = "" },  // Value = "Numero Contenedor"
                         TransportEquipment = new TransportEquipmentType[]
                         {
-                            new TransportEquipmentType { ID = new IDType { Value = envPlaca1},                  //-- PLACA - VEHICULO PRINCIPAL
-                                ApplicableTransportMeans = new TransportMeansType { RegistrationNationalityID = new RegistrationNationalityIDType{ Value = envAutor1 } },     // envRegis1
+                            new TransportEquipmentType { ID = new IDType { Value = envPlaca1 },                  //-- PLACA - VEHICULO PRINCIPAL
+                                ApplicableTransportMeans = new TransportMeansType { RegistrationNationalityID = new RegistrationNationalityIDType { Value = envAutor1 } },     // envRegis1
                                 AttachedTransportEquipment = new TransportEquipmentType[] { new TransportEquipmentType {
                                     ID = new IDType { Value = envPlaca2 },                                      //-- PLACA - VEHICULO SECUNDARIO O CARRETA 
-                                    ApplicableTransportMeans = new TransportMeansType { RegistrationNationalityID = new RegistrationNationalityIDType { Value = envAutor2 } },   // envRegis2
-                                    ShipmentDocumentReference = new DocumentReferenceType[]         // Tarjeta Unica Circulacion / Cerificado Habilitacion Vehicular - Principal
-                                        { new DocumentReferenceType {ID = new IDType { Value = envRegis2, schemeID = envCodEn2, schemeName = "Entidad Autorizadora", schemeAgencyName="PE:SUNAT", schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } }    // envAutor2
-                                },
-                                ShipmentDocumentReference = new DocumentReferenceType[]
-                                {
-                                    new DocumentReferenceType { ID = new IDType { Value = envRegis1, schemeID = envCodEn1, schemeName = "Entidad Autorizadora", schemeAgencyName="PE:SUNAT", schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } }     // envAutor1
+                                    ApplicableTransportMeans = new TransportMeansType { RegistrationNationalityID = new RegistrationNationalityIDType { Value = envAutor2 } }   // envRegis2
+                                    //ShipmentDocumentReference = new DocumentReferenceType[]         // Tarjeta Unica Circulacion / Cerificado Habilitacion Vehicular - Principal
+                                    //    { new DocumentReferenceType {ID = new IDType { Value = envRegis2, schemeID = envCodEn2, schemeName = "Entidad Autorizadora", schemeAgencyName="PE:SUNAT", schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } }    // envAutor2
                                 }
-                            } 
+                                //ShipmentDocumentReference = new DocumentReferenceType[]       // comentamos porque es dato opcional y se repite con la aut. de circulación 26/07/2023
+                                //{
+                                //    new DocumentReferenceType { ID = new IDType { Value = envRegis1, schemeID = envCodEn1, schemeName = "Entidad Autorizadora", schemeAgencyName="PE:SUNAT", schemeURI="urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } }     // envAutor1
+                                //}
+                                }
+                            }
                         }
                     }
-                }
-                /*,
-                FirstArrivalPortLocation = new LocationType1
-                {
-                    ID = new IDType { Value = "Codigo", schemeName = "Puertos", schemeAgencyName = "PE:SUNAT" },
-                    LocationTypeCode = new LocationTypeCodeType { Value = "1" }
-                } 
-                */
+                    /*,
+                    FirstArrivalPortLocation = new LocationType1
+                    {
+                        ID = new IDType { Value = "Codigo", schemeName = "Puertos", schemeAgencyName = "PE:SUNAT" },
+                        LocationTypeCode = new LocationTypeCodeType { Value = "1" }
+                    } 
+                    */
+                },
             };
-
             // DETALLE DE LA GUIA DE REMISION ELECTRONICA
             DespatchLineType[] detalle = null;
             if (indicadorCargaUnica != null && (
