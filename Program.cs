@@ -308,6 +308,7 @@ namespace xmlGRE
             };
             return retorna;
         }
+        
         private static string UsoUBLDespachT(string Pruta, string IndFir, string RAcert, string Clacert, 
             string rucEmi, string nomEmi, string dirEmi, string ubiEmi, string depEmi, string proEmi, string disEmi, string urbEmi, string paiEmi, string corEmi,
             string codGuia, string nomGuia, string numGuia, string fecEmis, string horEmis, int cantBul, decimal pesoTot, string codunis, string feciniT, bool cargaun,
@@ -674,7 +675,7 @@ namespace xmlGRE
             _comprobante.IssueTime = new IssueTimeType { Value = horEmis };     // output        .
             _comprobante.DespatchAdviceTypeCode = codtipo;      //-- CODIGO TIPO DE DOCUMENTO    .
             _comprobante.Note = nota1;                          //-- TEXTO DEL TIPO DE DOCUMENTO .
-            _comprobante.AdditionalDocumentReference = refer;   //-- DOCUMENTO RELACIONADO       .
+            if (docRelnu1 != "") _comprobante.AdditionalDocumentReference = refer;   //-- DOCUMENTO RELACIONADO       .
             if (docRelnu2 != null) _comprobante.AdditionalDocumentReference = refer2;   //       .
             _comprobante.Signature = signature;                 //-- FIRMA DEL DOCUMENTO         .
             _comprobante.DespatchSupplierParty = prove;         //-- DATOS DEL EMISOR (TRANSPORTISTA) --//  .
@@ -721,6 +722,7 @@ namespace xmlGRE
             }
             return retorna;
         }
+
         private static string UsoUBLDespachR(string Pruta, string IndFir, string RAcert, string Clacert,
             string rucEmi, string nomEmi, string dirEmi, string ubiEmi, string depEmi, string proEmi, string disEmi, string urbEmi, string paiEmi, string corEmi,
             string codGuia, string nomGuia, string numGuia, string fecEmis, string horEmis, int cantBul, decimal pesoTot, string codunis, string feciniT, bool cargaun,
