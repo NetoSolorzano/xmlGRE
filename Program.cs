@@ -13,7 +13,7 @@ namespace xmlGRE
 {
     class Program
     {
-        //static string rutaAct = @"c:\TRanscarga\TransCarga.db";
+        //static string rutaAct = @"c:\TRANSC_pruebas\TransCarga.db";
         static string rutaAct = Directory.GetCurrentDirectory() + @"\TransCarga.db";    // la base de datos siempre debe llamarse Transcarga.db
         public static string CadenaConexion = $"Data Source={rutaAct}";       // este app debe estar dentro del directorio del sistema Ej. c:/transcarga/xmlGRE
         
@@ -50,10 +50,11 @@ namespace xmlGRE
                 cnx.Open();
                 string condet = "";
                 string consulta = "";
-                if (tipg == "31") condet = "select * from dt_detgre where NumGuia=@gre";
+                // 
+                if (tipg == "31") condet = "select * from dt_detgre WHERE NumGuia=@gre ORDER BY NumGuia DESC LIMIT 1";  // "select * from dt_detgre where NumGuia=@gre";
                 else condet = "select * from dt_detgrer where NumGuia=@gre";
                 String[] detalle = new string[7];
-                if (tipg == "31") consulta = "select * from dt_cabgre where NumGuia=@gre";
+                if (tipg == "31") consulta = "SELECT * FROM dt_cabgre WHERE NumGuia=@gre ORDER BY FecEmis,HorEmis DESC LIMIT 1";    // "select * from dt_cabgre where NumGuia=@gre";
                 else consulta = "select * from dt_cabgrer where NumGuia=@gre";
                 using (SQLiteCommand micon = new SQLiteCommand(condet, cnx))
                 {
