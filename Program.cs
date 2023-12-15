@@ -639,11 +639,25 @@ namespace xmlGRE
             };
             // DETALLE DE LA GUIA DE REMISION ELECTRONICA
             DespatchLineType[] detalle = null;
+            detalle = new DespatchLineType[]
+            {
+                    new DespatchLineType {
+                        ID = new IDType { Value = "1"},
+                        DeliveredQuantity = new DeliveredQuantityType { Value = decimal.Parse(deta[0]), unitCode = deta[2], unitCodeListID = "UN/ECE rec 20", unitCodeListAgencyName = "United Nations Economic Commission for Europe"},
+                        OrderLineReference = new OrderLineReferenceType[] { new OrderLineReferenceType { LineID = new LineIDType {Value = "1" } } },
+                        Item = new ItemType {
+                            Description = new DescriptionType[] { new DescriptionType { Value = deta[5] + " " + deta[6] } },
+                            SellersItemIdentification = new ItemIdentificationType { ID = new IDType { Value = ""} },
+                            StandardItemIdentification = new ItemIdentificationType { ID = new IDType { Value = "", schemeID = ""} },
+                        }
+                    },
+            };
+            /* 15/12/2023 -> TODO ESTO SE COMENTO PORQUE ASI SEA CARGA UNICA SI DEBE LLEVAR DATOS DEL CONTENIDO O DETALLE DE LA CARGA
             if (indicadorCargaUnica != null && (
                 "'09','01','04'".Contains(docRelti1) && !"'0','1','2','3','4','5','6','7','8','9'".Contains(docRelnu1.Substring(0, 1)) ||
                 "'50','52'".Contains(docRelti1)))
             {
-                // no lleva detalle de los bienes porque sunat dice que es carga total del documento origen
+                // no lleva detalle de los bienes porque sunat dice que es carga total del documento origen .... FALSO 15/12/2023 Si debe llevar datos de la carga
             }
             else
             {
@@ -663,7 +677,7 @@ namespace xmlGRE
                     },
                 };
             }
-
+            */
             // ARMAMOS EL XML
             XmlSerializer serial = new XmlSerializer(typeof(DespatchAdviceType));
             Stream fs = new FileStream(Pruta + rucEmi + "-" + codGuia + "-" + numGuia + ".xml", FileMode.Create, FileAccess.Write);
