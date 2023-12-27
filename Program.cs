@@ -646,7 +646,7 @@ namespace xmlGRE
                         DeliveredQuantity = new DeliveredQuantityType { Value = decimal.Parse(deta[0]), unitCode = deta[2], unitCodeListID = "UN/ECE rec 20", unitCodeListAgencyName = "United Nations Economic Commission for Europe"},
                         OrderLineReference = new OrderLineReferenceType[] { new OrderLineReferenceType { LineID = new LineIDType {Value = "1" } } },
                         Item = new ItemType {
-                            Description = new DescriptionType[] { new DescriptionType { Value = deta[5] + " " + deta[6]  + " " + deta[1] + " " + deta[4] } },
+                            Description = new DescriptionType[] { new DescriptionType { Value = deta[5] + " " + deta[6] } },
                             SellersItemIdentification = new ItemIdentificationType { ID = new IDType { Value = ""} },
                             StandardItemIdentification = new ItemIdentificationType { ID = new IDType { Value = "", schemeID = ""} },
                         }
