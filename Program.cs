@@ -573,10 +573,30 @@ namespace xmlGRE
                     new ShipmentStageType
                     {
                         TransitPeriod = new PeriodType { StartDate = new StartDateType { Value = DateTime.Parse(feciniT) } },
+                        /*
                         CarrierParty = new PartyType[]
                         {
                             new PartyType { PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType { Value = envRegis1 } } },
                                 AgentParty = new PartyType { PartyLegalEntity = new PartyLegalEntityType[] { new PartyLegalEntityType { CompanyID = new CompanyIDType { Value = envAutor1, schemeID = envCodEn1, schemeName = "Entidad Autorizadora", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogoD37" } } } } }
+                        },
+                        */
+                        // adecuacion del 01/02/2024 10:10 pm.
+                        CarrierParty = new PartyType[]
+                        {
+                            new PartyType
+                            { 
+                                PartyIdentification = new PartyIdentificationType[]
+                                { 
+                                    new PartyIdentificationType 
+                                    { 
+                                        ID = new IDType { Value = rucEmi, schemeID = "6", schemeName = "Documento de Identidad", schemeAgencyName = "PE:SUNAT", schemeURI = "urn:pe:gob:sunat:cpe:see:gem:catalogos:catalogo06"} 
+                                    } 
+                                },
+                                PartyLegalEntity = new PartyLegalEntityType[]
+                                {
+                                    new PartyLegalEntityType { RegistrationName = new RegistrationNameType { Value = nomEmi } }
+                                }
+                            }
                         },
                         DriverPerson = choferes,
                     }
