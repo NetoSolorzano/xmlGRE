@@ -660,7 +660,7 @@ namespace xmlGRE
                     */
                 },
             };
-            // DETALLE DE LA GUIA DE REMISION ELECTRONICA
+            #region // DETALLE DE LA GUIA DE REMISION ELECTRONICA
             DespatchLineType[] detalle = null;
             if (cargaun == true)
             {
@@ -679,7 +679,6 @@ namespace xmlGRE
                     },
                 };
             }
-
             else
             {
                 detalle = new DespatchLineType[]
@@ -696,6 +695,7 @@ namespace xmlGRE
                     },
                 };
             }
+            #endregion
             /* 15/12/2023 -> TODO ESTO SE COMENTO PORQUE ASI SEA CARGA UNICA SI DEBE LLEVAR DATOS DEL CONTENIDO O DETALLE DE LA CARGA
             if (indicadorCargaUnica != null && (
                 "'09','01','04'".Contains(docRelti1) && !"'0','1','2','3','4','5','6','7','8','9'".Contains(docRelnu1.Substring(0, 1)) ||
