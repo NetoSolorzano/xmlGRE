@@ -1,4 +1,5 @@
 ﻿BITACORA, inicio => 01/02/2024
 - Program, cambio en ShipmentStage.Carrierparty .......................................... ok 01/02/2024
 - Program, cambio en carga única, no va la marca ......................................... ok 02/02/2024
-- Program, cambio en detalle si es carga unica o consolidada ............................. ok 
+- Program, cambio en detalle si es carga unica o consolidada ............................. ok 02/02/2024
+- Program, nuevo cambio en ShipmentStage.Carrierparty PartyLegalEntity ................... ok 02/02/2024 14:30
