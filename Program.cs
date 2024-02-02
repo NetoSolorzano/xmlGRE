@@ -564,7 +564,7 @@ namespace xmlGRE
                     SUNAT_Envio_IndicadorTrasladoTotal
                     */
                     indicadorSubCont,
-                    indicadorCargaUnica,
+                    //indicadorCargaUnica,
                     indicadorQuienpaga
                 },
                 Consignment = contratado,
