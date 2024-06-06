@@ -3,3 +3,8 @@
 - Program, cambio en carga única, no va la marca ......................................... ok 02/02/2024
 - Program, cambio en detalle si es carga unica o consolidada ............................. ok 02/02/2024
 - Program, nuevo cambio en ShipmentStage.Carrierparty PartyLegalEntity ................... ok 02/02/2024 14:30
+- Program, corrección de observación:
+	El tipo de estructura GS1 no tiene un valor permitido : 4335Error en la linea: 1: 
+	errorCode 4335 (nodo: "cbc:ID/schemeID" valor: ""	.................................. ok 02/02/2024
+	4434 - No corresponde consignar el detalle de los bienes a transportar : 4434INFO : 
+	errorCode 4434 (nodo: "cac:DespatchLine/cbc:DeliveredQuantity" valor: "1") ........... ok 05/06/2024
