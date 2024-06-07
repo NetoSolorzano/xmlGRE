@@ -685,8 +685,7 @@ namespace xmlGRE
                 {
                     new DespatchLineType {
                         ID = new IDType { Value = "1"}, 
-                        //DeliveredQuantity = new DeliveredQuantityType { Value = decimal.Parse(deta[0]), unitCode = deta[2], unitCodeListID = "UN/ECE rec 20", unitCodeListAgencyName = "United Nations Economic Commission for Europe"},  // comentado    05/06/2024
-                        DeliveredQuantity = new DeliveredQuantityType { unitCode = deta[2], unitCodeListID = "UN/ECE rec 20", unitCodeListAgencyName = "United Nations Economic Commission for Europe"},
+                        DeliveredQuantity = new DeliveredQuantityType { Value = decimal.Parse(deta[0]), unitCode = deta[2], unitCodeListID = "UN/ECE rec 20", unitCodeListAgencyName = "United Nations Economic Commission for Europe"},
                         OrderLineReference = new OrderLineReferenceType[] { new OrderLineReferenceType { LineID = new LineIDType {Value = "1" } } },
                         Item = new ItemType {
                             Description = new DescriptionType[] { new DescriptionType { Value = deta[5] + " " + deta[6] } }
