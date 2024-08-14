@@ -8,3 +8,4 @@
 	errorCode 4335 (nodo: "cbc:ID/schemeID" valor: ""	.................................. ok 02/02/2024
 	4434 - No corresponde consignar el detalle de los bienes a transportar : 4434INFO : 
 	errorCode 4434 (nodo: "cac:DespatchLine/cbc:DeliveredQuantity" valor: "1") ........... ok 05/06/2024
+- Program, agregar al detalle del XML la cantidad de bultos .............................. ok 14/08/2024
