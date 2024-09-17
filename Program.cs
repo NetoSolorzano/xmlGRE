@@ -353,8 +353,8 @@ namespace xmlGRE
                     // TEXTO TITULO DEL DOCUMENTO
                     nota1 = new NoteType[]
                     {
-                        new NoteType{ Value = nomGuia},
-                        new NoteType{ Value = observ}
+                        new NoteType{ Value = nomGuia + " - " + observ},
+                        //new NoteType{ Value = observ}
                     };
                 }
                 else
@@ -364,8 +364,8 @@ namespace xmlGRE
                         // TEXTO TITULO DEL DOCUMENTO
                         nota1 = new NoteType[]
                         {
-                            new NoteType{ Value = nomGuia},
-                            new NoteType{ Value = "Consignatario: " + conSig}
+                            new NoteType{ Value = nomGuia + " - Consignatario: " + conSig },
+                            //new NoteType{ Value = "Consignatario: " + conSig}
                         };
                     }
                     else
@@ -373,9 +373,10 @@ namespace xmlGRE
                         // TEXTO TITULO DEL DOCUMENTO
                         nota1 = new NoteType[]
                         {
-                            new NoteType{ Value = nomGuia},
-                            new NoteType{ Value = observ},
-                            new NoteType{ Value = "Consignatario: " + conSig}
+                            new NoteType{ Value = observ + " - Consignatario: " + conSig},
+                            //new NoteType{ Value = nomGuia + " - " + observ + " - Consignatario: " + conSig},
+                            //new NoteType{ Value = observ},
+                            //new NoteType{ Value = "Consignatario: " + conSig}
                         };
                     }
                 }
