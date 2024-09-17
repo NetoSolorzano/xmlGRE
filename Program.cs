@@ -174,7 +174,16 @@ namespace xmlGRE
                                 m02 = lite["MotTrasDe"].ToString();
                                 m03 = lite["CodModTra"].ToString();     // codigo sunat modalidad de transporte (propio ó público)
                             }
-                            var o01 = lite["ObserGuia"].ToString();                // observaciones de la guía
+                            var o01 = lite["ObserGuia"].ToString();     // observaciones de la guía
+                            var o02 = "";
+                            try
+                            {
+                                if (lite["consign"] != null)    // Índice fuera de los límites de la matriz.
+                                {
+                                    o02 = lite["consign"].ToString();       // consignatario
+                                }
+                            }
+                            catch (Exception ex) { }
 
                             GRE_T gRE = new GRE_T
                             {
@@ -268,7 +277,8 @@ namespace xmlGRE
                                 MotTrasDe = m02,                     // descripción motivo del traslado
                                 CodModTra = m03,                     // código sunat modalidad de transporte
                                 // observaciones
-                                observ = o01,
+                                observ = o01,                        // Anotacion observaciones
+                                consig = o02,                        // Anotacion consignatario 
                                 // detalle de la guía
                                 Detalle = detalle                   //new string[5] { "1", "ZZ", "30", "Servicio de Transporte de carga terrestre ", "Dice contener Enseres caseros" }     // Cant,Umed,Peso,Desc1,Desc2
                             };
@@ -284,7 +294,7 @@ namespace xmlGRE
                                     gRE.EnvPlaca1, gRE.EnvAutor1, gRE.EnvRegis1, gRE.EnvCodEn1, gRE.EnvNomEn1, gRE.EnvPlaca2, gRE.EnvAutor2, gRE.EnvRegis2, gRE.EnvCodEn2, gRE.EnvNomEn2,
                                     gRE.ChoTipDi1, gRE.ChoNumDi1, gRE.ChoNomTi1, gRE.ChoNombr1, gRE.ChoApell1, gRE.ChoLicen1,
                                     gRE.ChoTipDi2, gRE.ChoNumDi2, gRE.ChoNomTi2, gRE.ChoNombr2, gRE.ChoApell2, gRE.ChoLicen2,
-                                    gRE.DirParUbi, gRE.DirParDir, gRE.DirLLeUbi, gRE.DirLLeDir, gRE.observ, gRE.Detalle);
+                                    gRE.DirParUbi, gRE.DirParDir, gRE.DirLLeUbi, gRE.DirLLeDir, gRE.observ, gRE.consig, gRE.Detalle);
                             }
                             if (tipg == "09")
                             {
@@ -323,12 +333,12 @@ namespace xmlGRE
             string envPlaca1, string envAutor1, string envRegis1, string envCodEn1, string envNomEn1, string envPlaca2, string envAutor2, string envRegis2, string envCodEn2, string envNomEn2,
             string choTipDi1, string choNumDi1, string choNomTi1, string choNombr1, string choApell1, string choLicen1,
             string choTipDi2, string choNumDi2, string choNomTi2, string choNombr2, string choApell2, string choLicen2,
-            string dirParubi, string dirPardir, string dirLLeubi, string dirLLedir, string observ, string[] deta)         // GUIA TRANSPORTISTA 
+            string dirParubi, string dirPardir, string dirLLeubi, string dirLLedir, string observ, string conSig, string[] deta)         // GUIA TRANSPORTISTA 
         {
             string retorna = "Fallo";
             // OBSERVACION (SI HAY)
             NoteType[] nota1 = null;
-            if (string.IsNullOrEmpty(observ)) // observ != null && observ != ""
+            if (string.IsNullOrEmpty(observ) && string.IsNullOrEmpty(conSig)) // observ != null && observ != ""
             {
                 // TEXTO TITULO DEL DOCUMENTO
                 nota1 = new NoteType[]
@@ -338,12 +348,37 @@ namespace xmlGRE
             }
             else
             {
-                // TEXTO TITULO DEL DOCUMENTO
-                nota1 = new NoteType[]
+                if (string.IsNullOrEmpty(conSig))
                 {
-                    new NoteType{ Value = nomGuia},
-                    new NoteType{ Value = observ}
-                };
+                    // TEXTO TITULO DEL DOCUMENTO
+                    nota1 = new NoteType[]
+                    {
+                        new NoteType{ Value = nomGuia},
+                        new NoteType{ Value = observ}
+                    };
+                }
+                else
+                {
+                    if (string.IsNullOrEmpty(observ))
+                    {
+                        // TEXTO TITULO DEL DOCUMENTO
+                        nota1 = new NoteType[]
+                        {
+                            new NoteType{ Value = nomGuia},
+                            new NoteType{ Value = "Consignatario: " + conSig}
+                        };
+                    }
+                    else
+                    {
+                        // TEXTO TITULO DEL DOCUMENTO
+                        nota1 = new NoteType[]
+                        {
+                            new NoteType{ Value = nomGuia},
+                            new NoteType{ Value = observ},
+                            new NoteType{ Value = "Consignatario: " + conSig}
+                        };
+                    }
+                }
             }
             // CODIGO TIPO DE DOCUMENTO
             DespatchAdviceTypeCodeType codtipo = new DespatchAdviceTypeCodeType
@@ -1347,6 +1382,7 @@ namespace xmlGRE
         public string MotTrasDe { get; set; }        // Motivo de traslado - descripción motivo del traslado
         public string CodModTra { get; set; }        // Código sunat modalidad de transporte
         public string observ { get; set; }           // observaciones de la guía
+        public string consig { get; set; }           // consignatario de la guia
         // 
         public string[] Detalle { get; set; }        // Detalle de la guía
 

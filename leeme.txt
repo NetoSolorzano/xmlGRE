@@ -10,4 +10,6 @@
 	errorCode 4434 (nodo: "cac:DespatchLine/cbc:DeliveredQuantity" valor: "1") ........... ok 05/06/2024
 - Program, agregar al detalle del XML la cantidad de bultos .............................. ok 14/08/2024
 - Program, retirar del detalle del XML la cantidad de bultos ............................. ok 16/08/2024
-- Program, adecuaciones para las observaciones de la guía ................................ 
+- Program, adecuaciones para las observaciones de la guía ................................ ok 19/08/2024
+- Program, codigo de documento relacionado factura tiene un espacio a la derecha ......... ok 31/08/2024
+- Program, adecuaciones para poner en anotaciones el consignatario ....................... ok 17/09/2024
